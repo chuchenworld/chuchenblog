@@ -32,10 +32,25 @@
         <el-form label-width="120px">
           <el-form-item label="当前背景">
             <div v-if="homeBackgroundUrl" class="mb-4">
-              <img :src="homeBackgroundUrl" alt="首页背景" class="w-64 h-36 object-cover rounded" />
+              <video
+                v-if="isVideo(homeBackgroundUrl)"
+                :src="homeBackgroundUrl"
+                alt="首页背景"
+                class="w-64 h-36 object-cover rounded"
+                autoplay
+                muted
+                loop
+                playsinline
+              />
+              <img
+                v-else
+                :src="homeBackgroundUrl"
+                alt="首页背景"
+                class="w-64 h-36 object-cover rounded"
+              />
             </div>
             <div v-else class="mb-4 text-gray-500">
-              暂无背景图
+              暂无背景
             </div>
           </el-form-item>
           <el-form-item label="上传新背景">
@@ -48,19 +63,20 @@
               :before-upload="beforeUpload"
               :limit="1"
               :auto-upload="true"
+              accept="image/*,video/mp4"
             >
               <el-button type="primary">点击上传</el-button>
               <template #tip>
                 <div class="el-upload__tip">
-                  只能上传 JPG、PNG 图片，且不超过 5MB
+                  支持上传 JPG/PNG 图片或 MP4 视频作为背景，且不超过 50MB
                 </div>
               </template>
             </el-upload>
           </el-form-item>
-          <el-form-item label="背景图URL">
+          <el-form-item label="背景URL">
             <el-input
               v-model="homeBackgroundUrl"
-              placeholder="请输入背景图URL"
+              placeholder="请输入背景URL"
               class="w-full"
             />
           </el-form-item>
@@ -122,6 +138,10 @@ const settings = ref({
   siteKeywords: '博客,技术,生活',
   contactEmail: 'admin@example.com'
 })
+
+const isVideo = (url) => {
+  return url && url.toLowerCase().endsWith('.mp4')
+}
 
 const loadHomeSlogan = async () => {
   try {
@@ -191,16 +211,25 @@ const handleUploadError = (error) => {
 }
 
 const beforeUpload = (file) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-  if (!isJpgOrPng) {
-    ElMessage.error('只能上传 JPG、PNG 图片')
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'video/mp4'
+  ]
+
+  const isAllowedType = allowedTypes.includes(file.type)
+  if (!isAllowedType) {
+    ElMessage.error('只能上传 JPG、PNG、WebP 图片或 MP4 视频')
     return false
   }
-  const isLt5M = file.size / 1024 / 1024 < 5
-  if (!isLt5M) {
-    ElMessage.error('图片大小不能超过 5MB')
+
+  const isLt50M = file.size / 1024 / 1024 < 50
+  if (!isLt50M) {
+    ElMessage.error('文件大小不能超过 50MB')
     return false
   }
+
   return true
 }
 

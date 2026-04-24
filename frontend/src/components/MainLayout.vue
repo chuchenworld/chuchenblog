@@ -47,7 +47,10 @@
       </div>
     </el-header>
     <el-main class="main-content">
-      <slot />
+      <!-- 新增一个内部容器来控制内容宽度，但允许背景全屏 -->
+      <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <slot />
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -166,9 +169,9 @@ onMounted(() => {
 }
 
 .main-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 120px 20px 60px;
+  min-width: 1200px;
+  min-height: 100vh;
+  padding: 120px 0 60px;
   background-color: transparent !important;
 }
 

@@ -77,7 +77,7 @@
 
         <div class="tag-container">
           <el-tag
-            v-for="(tag, index) in tags"
+            v-for="(tag, index) in profile.tags"
             :key="index"
             class="mr-2 mb-2"
             closable
@@ -85,11 +85,11 @@
           >
             {{ tag }}
           </el-tag>
-          <span v-if="tags.length === 0" class="text-gray-400 text-sm">暂无标签</span>
+          <span v-if="profile.tags.length === 0" class="text-gray-400 text-sm">暂无标签</span>
         </div>
 
         <div class="mt-4">
-          <el-button type="primary" @click="saveTags" :loading="tagLoading">保存标签</el-button>
+          <el-button type="info" @click="addTag" :disabled="!newTag.trim()">添加标签</el-button>
         </div>
       </div>
     </div>
@@ -104,7 +104,6 @@ import request from '@/utils/request'
 const username = ref('')
 const role = ref('')
 const loading = ref(false)
-const tagLoading = ref(false)
 const defaultAvatar = '/src/assets/login.png'
 
 const profile = ref({
@@ -113,10 +112,9 @@ const profile = ref({
   email: '',
   avatar: '',
   bio: '',
-  tags: ''
+  tags: []
 })
 
-const tags = ref([])
 const newTag = ref('')
 
 onMounted(() => {
@@ -130,11 +128,14 @@ const fetchProfile = async () => {
     const res = await request.get('/admin/profile')
     profile.value = res.data
     if (res.data.tags) {
-      tags.value = res.data.tags.split(',').map(t => t.trim()).filter(t => t)
+      profile.value.tags = Array.isArray(res.data.tags) ? res.data.tags : res.data.tags.split(',').map(t => t.trim()).filter(t => t)
+    } else {
+      profile.value.tags = []
     }
   } catch (error) {
     console.error('获取个人资料失败:', error)
     ElMessage.error('获取个人资料失败')
+    profile.value.tags = []
   }
 }
 
@@ -174,30 +175,16 @@ const saveProfile = async () => {
 
 const addTag = () => {
   const tag = newTag.value.trim()
-  if (tag && !tags.value.includes(tag)) {
-    tags.value.push(tag)
+  if (tag && !profile.value.tags.includes(tag)) {
+    profile.value.tags.push(tag)
     newTag.value = ''
-  } else if (tags.value.includes(tag)) {
+  } else if (profile.value.tags.includes(tag)) {
     ElMessage.warning('标签已存在')
   }
 }
 
 const removeTag = (index) => {
-  tags.value.splice(index, 1)
-}
-
-const saveTags = async () => {
-  tagLoading.value = true
-  try {
-    profile.value.tags = tags.value.join(',')
-    await request.put('/admin/profile', { tags: profile.value.tags })
-    ElMessage.success('标签保存成功')
-  } catch (error) {
-    console.error('保存标签失败:', error)
-    ElMessage.error('保存标签失败')
-  } finally {
-    tagLoading.value = false
-  }
+  profile.value.tags.splice(index, 1)
 }
 </script>
 

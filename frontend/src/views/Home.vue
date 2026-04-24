@@ -7,95 +7,73 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap -mx-4">
-        <div class="w-full md:w-2/3 px-4">
+      <div class="w-full px-4 sm:px-6 lg:px-12 relative">
+        
+        <!-- 文章区域独立：在屏幕中央形成一个舒适的阅读列 -->
+        <div class="w-full max-w-3xl mx-auto relative z-10 mb-12">
           <div class="header">
             <h2>{{ selectedCategoryId ? categories.find(c => c.id === selectedCategoryId)?.name || '文章分类' : '最新文章' }}</h2>
           </div>
-
+          
           <div v-loading="loading" class="article-list">
             <el-empty v-if="!loading && postStore.posts.length === 0" description="暂无文章" />
-
-            <el-card
-              v-for="post in postStore.posts"
-              :key="post.id"
-              class="article-card"
-              shadow="hover"
-              @click="goToDetail(post.id)"
-            >
-              <div class="article-header">
-                <h3 class="article-title">{{ post.title || '无标题' }}</h3>
-                <el-tag v-if="post.status === 1" type="success" size="small">已发布</el-tag>
-                <el-tag v-else type="info" size="small">草稿</el-tag>
-              </div>
-              <p class="article-summary">{{ post.summary || post.content?.substring(0, 100) || '暂无内容' }}</p>
-              <div class="article-footer">
-                <span class="article-info">
-                  <el-icon><view /></el-icon>
-                  {{ post.viewCount || post.views || 0 }}
-                </span>
-                <span class="article-info">
-                  <el-icon><calendar /></el-icon>
-                  {{ formatDate(post.createTime || post.createdAt) }}
-                </span>
+            <el-card v-for="post in postStore.posts" :key="post.id" class="article-card" shadow="hover" @click="goToDetail(post.id)" :style="{ backgroundImage: post.coverImage ? `url(${post.coverImage})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }" >
+              <div class="article-overlay">
+                <div class="article-header">
+                  <h3 class="article-title">{{ post.title || '无标题' }}</h3>
+                  <el-tag v-if="post.status === 1" type="success" size="small">已发布</el-tag>
+                  <el-tag v-else type="info" size="small">草稿</el-tag>
+                </div>
+                <p class="article-summary">{{ post.summary || post.content?.substring(0, 100) || '暂无内容' }}</p>
+                <div class="article-footer">
+                  <span class="article-info">
+                    <el-icon><view /></el-icon> {{ post.viewCount || post.views || 0 }}
+                  </span>
+                  <span class="article-info">
+                    <el-icon><calendar /></el-icon> {{ formatDate(post.createTime || post.createdAt) }}
+                  </span>
+                </div>
               </div>
             </el-card>
           </div>
 
           <div v-if="postStore.posts.length > 0" class="pagination">
-            <el-pagination
-              v-model:current-page="pageNum"
-              v-model:page-size="pageSize"
-              :page-sizes="[10, 20, 50]"
-              :total="postStore.total"
-              layout="total, sizes, prev, pager, next"
-              @size-change="handleSizeChange"
-              @current-change="handlePageChange"
-            />
+            <el-pagination v-model:current-page="pageNum" v-model:page-size="pageSize" :page-sizes="[10, 20, 50]" :total="postStore.total" layout="total, sizes, prev, pager, next" @size-change="handleSizeChange" @current-change="handlePageChange" />
           </div>
         </div>
 
-        <div class="w-full md:w-1/3 px-4 mt-6 md:mt-0">
-          <el-card class="mb-6 glass-card">
-            <div class="text-center">
-              <div class="avatar mb-4">
-                <img
-                  :src="adminProfile.avatar || defaultAvatar"
-                  alt="博主头像"
-                  class="w-24 h-24 rounded-full mx-auto"
-                  @error="handleImageError"
-                >
+        <!-- 侧边栏绝对定位：悬浮在页面的最右侧，不再占用文章区域的空间 -->
+        <div class="hidden lg:block absolute right-0 top-0 w-80">
+          <div class="sticky top-24 space-y-6">
+            <el-card class="mb-6 glass-card">
+              <div class="text-center">
+                <div class="avatar mb-4">
+                  <img :src="adminProfile.avatar || defaultAvatar" alt="博主头像" class="w-24 h-24 rounded-full mx-auto" @error="handleImageError" >
+                </div>
+                <h3 class="font-bold text-lg text-white text-shadow">{{ adminProfile.nickname || '初尘' }}</h3>
+                <p class="text-gray-300 mt-2 text-shadow">{{ adminProfile.bio || '热爱技术，分享生活' }}</p>
+                <div class="mt-4 flex justify-center space-x-4">
+                  <el-button type="primary" size="small" plain>关注</el-button>
+                  <el-button size="small" plain>联系我</el-button>
+                </div>
               </div>
-              <h3 class="font-bold text-lg text-white text-shadow">{{ adminProfile.nickname || '初尘' }}</h3>
-              <p class="text-gray-300 mt-2 text-shadow">{{ adminProfile.bio || '热爱技术，分享生活' }}</p>
-              <div class="mt-4 flex justify-center space-x-4">
-                <el-button type="primary" size="small" plain>关注</el-button>
-                <el-button size="small" plain>联系我</el-button>
+            </el-card>
+            <el-card class="glass-card">
+              <template #header>
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-white text-shadow">标签云</span>
+                </div>
+              </template>
+              <div class="tag-cloud">
+                <el-tag v-for="tag in tagList" :key="tag" size="small" class="mr-2 mb-2 cursor-pointer tag-hover" effect="plain" @click="handleTagClick(tag)" >
+                  {{ tag }}
+                </el-tag>
+                <span v-if="tagList.length === 0" class="no-tags">暂无标签</span>
               </div>
-            </div>
-          </el-card>
-
-          <el-card class="glass-card">
-            <template #header>
-              <div class="flex justify-between items-center">
-                <span class="font-bold text-white text-shadow">标签云</span>
-              </div>
-            </template>
-            <div class="tag-cloud">
-              <el-tag
-                v-for="tag in tagList"
-                :key="tag"
-                size="small"
-                class="mr-2 mb-2 cursor-pointer tag-hover"
-                effect="plain"
-                @click="handleTagClick(tag)"
-              >
-                {{ tag }}
-              </el-tag>
-              <span v-if="tagList.length === 0" class="no-tags">暂无标签</span>
-            </div>
-          </el-card>
+            </el-card>
+          </div>
         </div>
+
       </div>
     </div>
   </MainLayout>
@@ -104,7 +82,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { View, Calendar } from '@element-plus/icons-vue'
+import { Calendar } from '@element-plus/icons-vue'
 import MainLayout from '@/components/MainLayout.vue'
 import { usePostStore } from '@/stores/post'
 import { getSiteConfig } from '@/api/config'
@@ -134,12 +112,11 @@ async function fetchTags() {
   try {
     const response = await request.get('/profile')
     if (response.data && response.data.tags) {
-      tagList.value = response.data.tags.split(',').map(t => t.trim()).filter(t => t)
+      tagList.value = Array.isArray(response.data.tags) ? response.data.tags : response.data.tags.split(',').map(t => t.trim()).filter(t => t)
       console.log('【Home.vue】标签数据获取成功:', tagList.value)
     }
   } catch (error) {
     console.error('【Home.vue】标签数据获取失败:', error.message)
-    // 使用默认标签数据
     tagList.value = ['Vue', 'Java', 'Spring Boot', '前端开发', '后端开发', 'DevOps']
   }
 }
@@ -154,7 +131,6 @@ async function fetchCategories() {
     }
   } catch (error) {
     console.error('【Home.vue】分类数据获取失败:', error.message)
-    // 使用默认分类数据
     categories.value = [
       { id: 1, name: '前端开发', articleCount: 0 },
       { id: 2, name: '后端开发', articleCount: 0 },
@@ -213,16 +189,6 @@ async function fetchPosts() {
   }
 }
 
-function handleCategoryClick(category) {
-  if (selectedCategoryId.value === category.id) {
-    selectedCategoryId.value = null
-  } else {
-    selectedCategoryId.value = category.id
-  }
-  pageNum.value = 1
-  fetchPosts()
-}
-
 function handleTagClick(tag) {
   console.log('标签点击:', tag)
 }
@@ -272,6 +238,8 @@ onMounted(() => {
   min-height: 100vh;
   background-color: transparent;
   padding-top: 100px;
+  padding-bottom: 60px;
+  min-width: 1200px;
 }
 
 .hero-section {
@@ -379,6 +347,15 @@ onMounted(() => {
   .hero-subtitle {
     font-size: 1rem;
   }
+  
+  .article-card {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .glass-card {
+    width: 100%;
+  }
 }
 
 .header {
@@ -405,15 +382,26 @@ onMounted(() => {
   background-color: transparent !important;
   box-shadow: none !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  padding: 20px !important;
+  padding: 0 !important;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  overflow: hidden;
+  min-height: 200px;
+  width: 100%;
+  max-width: none;
+}
+
+.article-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .article-card:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.4) !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 }
 
 .article-header {
@@ -438,6 +426,7 @@ onMounted(() => {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }

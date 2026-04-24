@@ -1,6 +1,6 @@
 <template>
   <MainLayout>
-    <div class="articles-page">
+    <div class="articles-page w-full px-4 sm:px-6 lg:px-8 py-8 min-h-screen flex flex-col overflow-x-hidden">
       <div class="header">
         <div class="flex items-center justify-between flex-wrap gap-4">
           <h2>文章归档</h2>
@@ -17,30 +17,89 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap -mx-4">
-        <div :class="['px-4', sidebarVisible ? 'w-full md:w-2/3' : 'w-full']">
+      <div class="flex flex-col lg:flex-row items-start gap-6 lg:gap-8 flex-1">
+        <div class="flex-1 w-full">
           <div v-loading="loading" class="article-list">
             <el-empty v-if="!loading && error" description="加载失败" :image-size="200" />
             <el-empty v-else-if="!loading && filteredPosts.length === 0" description="暂无文章" />
 
             <template v-else>
               <transition-group name="fade" tag="div" class="card-list" v-if="viewMode === 'card'">
-                <article-card
+                <div
                   v-for="post in paginatedPosts"
                   :key="post.id"
-                  :post="post"
+                  class="article-card"
                   @click="goToDetail(post.id)"
-                />
+                >
+                  <div class="card-inner">
+                    <div class="card-image" v-if="post.coverImage">
+                      <img :src="post.coverImage" :alt="post.title" />
+                    </div>
+                    <div class="card-content">
+                      <div class="card-header">
+                        <h3 class="card-title">{{ post.title }}</h3>
+                        <el-tag v-if="post.categoryName" type="primary" size="small" effect="plain">
+                          {{ post.categoryName }}
+                        </el-tag>
+                      </div>
+                      <p class="card-summary">{{ post.summary || '暂无摘要' }}</p>
+                      <div class="card-meta">
+                        <span class="meta-item">
+                          <el-icon><Calendar /></el-icon>
+                          {{ formatDate(post.createTime) }}
+                        </span>
+                        <span class="meta-item">
+                          <el-icon><View /></el-icon>
+                          {{ post.viewCount || 0 }}
+                        </span>
+                        <span class="meta-item">
+                          <el-icon><ChatLineSquare /></el-icon>
+                          {{ post.commentCount || 0 }}
+                        </span>
+                      </div>
+                      <div class="card-tags" v-if="post.tags">
+                        <el-tag
+                          v-for="tag in (Array.isArray(post.tags) ? post.tags : String(post.tags || '').split(',')).slice(0, 3)"
+                          :key="Array.isArray(post.tags) ? tag : tag.trim()"
+                          size="small"
+                          type="info"
+                          effect="plain"
+                        >{{ Array.isArray(post.tags) ? tag : tag.trim() }}</el-tag>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </transition-group>
 
               <div class="timeline-container" v-else>
-                <timeline-view
-                  v-for="(yearPosts, year) in timelineData"
-                  :key="year"
-                  :year="year"
-                  :posts="yearPosts"
-                  @post-click="goToDetail"
-                />
+                <div v-for="(yearPosts, year) in timelineData" :key="year" class="timeline-year">
+                  <div class="timeline-header">
+                    <div class="timeline-year-badge">{{ year }}</div>
+                    <div class="timeline-year-line"></div>
+                  </div>
+                  <div class="timeline-items">
+                    <div
+                      v-for="post in yearPosts"
+                      :key="post.id"
+                      class="timeline-item"
+                      @click="goToDetail(post.id)"
+                    >
+                      <div class="timeline-date">
+                        <span class="date-day">{{ getDay(post.createTime) }}</span>
+                        <span class="date-month">{{ getMonth(post.createTime) }}</span>
+                      </div>
+                      <div class="timeline-dot"></div>
+                      <div class="timeline-content">
+                        <h4 class="timeline-title">{{ post.title }}</h4>
+                        <p class="timeline-summary">{{ post.summary }}</p>
+                        <div class="timeline-meta">
+                          <el-tag v-if="post.categoryName" size="small">{{ post.categoryName }}</el-tag>
+                          <span class="meta-views"><el-icon><View /></el-icon> {{ post.viewCount }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </template>
           </div>
@@ -59,9 +118,9 @@
           </div>
         </div>
 
-        <div v-if="sidebarVisible" class="w-full md:w-1/3 px-4 mt-6 md:mt-0">
+        <div class="w-full lg:flex-[0_0_300px] flex-shrink-0 mt-8 lg:mt-0">
           <div class="sticky top-4">
-            <el-card class="archive-card" shadow="hover">
+            <el-card class="archive-card glass-card" shadow="hover">
               <template #header>
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-lg">
@@ -112,7 +171,7 @@
               </div>
             </el-card>
 
-            <el-card class="mt-4 category-card" shadow="hover">
+            <el-card class="mt-4 category-card glass-card" shadow="hover">
               <template #header>
                 <span class="font-bold text-lg">
                   <el-icon class="mr-2"><PriceTag /></el-icon>分类筛选
@@ -139,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, markRaw } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Calendar, Grid, Operation, PriceTag, ArrowRight, RefreshRight } from '@element-plus/icons-vue'
 import MainLayout from '@/components/MainLayout.vue'
@@ -161,102 +220,7 @@ const selectedYear = ref(null)
 const selectedMonth = ref(null)
 const selectedCategory = ref(null)
 
-const ArticleCard = {
-  props: ['post'],
-  template: `
-    <div class="article-card" @click="$emit('click')">
-      <div class="card-inner">
-        <div class="card-image" v-if="post.coverImage">
-          <img :src="post.coverImage" :alt="post.title" />
-        </div>
-        <div class="card-content">
-          <div class="card-header">
-            <h3 class="card-title">{{ post.title }}</h3>
-            <el-tag v-if="post.categoryName" type="primary" size="small" effect="plain">
-              {{ post.categoryName }}
-            </el-tag>
-          </div>
-          <p class="card-summary">{{ post.summary || '暂无摘要' }}</p>
-          <div class="card-meta">
-            <span class="meta-item">
-              <el-icon><Calendar /></el-icon>
-              {{ formatDate(post.createTime) }}
-            </span>
-            <span class="meta-item">
-              <el-icon><View /></el-icon>
-              {{ post.viewCount || 0 }}
-            </span>
-            <span class="meta-item">
-              <el-icon><ChatLineSquare /></el-icon>
-              {{ post.commentCount || 0 }}
-            </span>
-          </div>
-          <div class="card-tags" v-if="post.tags">
-            <el-tag
-              v-for="tag in post.tags.split(',').slice(0, 3)"
-              :key="tag"
-              size="small"
-              type="info"
-              effect="plain"
-            >{{ tag.trim() }}</el-tag>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  methods: {
-    formatDate(dateStr) {
-      if (!dateStr) return ''
-      return new Date(dateStr).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-    }
-  },
-  emits: ['click']
-}
 
-const TimelineView = {
-  props: ['year', 'posts'],
-  emits: ['postClick'],
-  template: `
-    <div class="timeline-year">
-      <div class="timeline-header">
-        <div class="timeline-year-badge">{{ year }}</div>
-        <div class="timeline-year-line"></div>
-      </div>
-      <div class="timeline-items">
-        <div
-          v-for="post in posts"
-          :key="post.id"
-          class="timeline-item"
-          @click="$emit('postClick', post.id)"
-        >
-          <div class="timeline-date">
-            <span class="date-day">{{ getDay(post.createTime) }}</span>
-            <span class="date-month">{{ getMonth(post.createTime) }}</span>
-          </div>
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <h4 class="timeline-title">{{ post.title }}</h4>
-            <p class="timeline-summary">{{ post.summary }}</p>
-            <div class="timeline-meta">
-              <el-tag v-if="post.categoryName" size="small">{{ post.categoryName }}</el-tag>
-              <span class="meta-views"><el-icon><View /></el-icon> {{ post.viewCount }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  methods: {
-    getDay(dateStr) {
-      if (!dateStr) return ''
-      return new Date(dateStr).getDate()
-    },
-    getMonth(dateStr) {
-      if (!dateStr) return ''
-      return new Date(dateStr).toLocaleDateString('zh-CN', { month: 'short' })
-    }
-  }
-}
 
 const allPosts = computed(() => posts.value)
 const filteredPosts = computed(() => {
@@ -318,9 +282,15 @@ async function fetchPosts() {
   error.value = ''
   try {
     const res = await request.get('/posts/all')
-    posts.value = res.data || []
+    console.log('接口返回数据:', res)
+    console.log('res.data:', res.data)
+    // 检查数据结构，可能需要根据实际返回结构调整
+    posts.value = Array.isArray(res.data) ? res.data : (res.data?.list || res.data?.records || [])
     total.value = posts.value.length
+    console.log('处理后的数据:', posts.value)
+    console.log('数据长度:', total.value)
   } catch (err) {
+    console.error('加载失败:', err)
     error.value = '加载失败，请稍后重试'
   } finally {
     loading.value = false
@@ -381,6 +351,21 @@ function clearFilter() {
   pageNum.value = 1
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function getDay(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).getDate()
+}
+
+function getMonth(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('zh-CN', { month: 'short' })
+}
+
 onMounted(() => {
   fetchPosts()
   fetchCategories()
@@ -391,31 +376,39 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+
 .articles-page {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-  border-radius: 16px;
-  padding: 24px;
+  background: transparent;
   min-height: calc(100vh - 120px);
+  min-width: 1200px;
 }
 
 .header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid rgba(64, 158, 255, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .header h2 {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .view-toggle :deep(.el-radio-button__inner) {
   border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.view-toggle :deep(.el-radio-button__orig-radio:checked + .el-radio-button__inner) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: #ffffff;
 }
 
 .card-list {
@@ -424,24 +417,26 @@ onMounted(() => {
 }
 
 .article-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .article-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .card-inner {
   display: flex;
   flex-direction: row;
+  box-sizing: border-box;
 }
 
 .card-image {
@@ -449,6 +444,7 @@ onMounted(() => {
   min-height: 160px;
   flex-shrink: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .card-image img {
@@ -481,10 +477,11 @@ onMounted(() => {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1f2937;
+  color: #ffffff;
   line-height: 1.4;
   flex: 1;
   transition: color 0.3s;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .article-card:hover .card-title {
@@ -492,23 +489,26 @@ onMounted(() => {
 }
 
 .card-summary {
-  color: #6b7280;
+  color: #e0e0e0;
   margin: 0 0 16px;
   line-height: 1.8;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   flex: 1;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .card-meta {
   display: flex;
   gap: 20px;
   margin-bottom: 12px;
-  color: #9ca3af;
+  color: #b0b0b0;
   font-size: 14px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .meta-item {
@@ -529,13 +529,20 @@ onMounted(() => {
 
 .card-tags .el-tag {
   border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-.archive-card,
-.category-card {
-  border-radius: 16px;
-  border: none;
-  overflow: hidden;
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+  padding: 20px !important;
+  margin-bottom: 20px !important;
 }
 
 .archive-card :deep(.el-card__header),
@@ -543,11 +550,13 @@ onMounted(() => {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 16px 20px;
+  border-bottom: none !important;
 }
 
 .archive-card :deep(.el-card__header) span,
 .category-card :deep(.el-card__header) span {
   color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .custom-collapse :deep(.el-collapse-item__header) {
@@ -557,6 +566,8 @@ onMounted(() => {
   line-height: 48px;
   padding: 0 8px;
   font-size: 15px;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .custom-collapse :deep(.el-collapse-item__wrap) {
@@ -581,7 +592,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #374151;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .year-arrow {
@@ -608,11 +620,13 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(102, 126, 234, 0.1);
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .month-item:hover {
-  background: rgba(102, 126, 234, 0.15);
+  background: rgba(102, 126, 234, 0.2);
   transform: translateX(4px);
 }
 
@@ -631,8 +645,8 @@ onMounted(() => {
 }
 
 .month-count {
-  background: #e5e7eb;
-  color: #6b7280;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
   padding: 2px 10px;
   border-radius: 12px;
   font-size: 12px;
@@ -641,8 +655,13 @@ onMounted(() => {
 
 .archive-actions {
   padding: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
+}
+
+.archive-actions :deep(.el-button) {
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .category-list {
@@ -659,11 +678,13 @@ onMounted(() => {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s;
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .category-item:hover {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(102, 126, 234, 0.2);
   transform: translateX(4px);
 }
 
@@ -676,6 +697,13 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.3);
   border-color: transparent;
   color: white;
+}
+
+.category-item .el-tag {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-container {
@@ -730,16 +758,19 @@ onMounted(() => {
   gap: 20px;
   padding: 16px 20px;
   margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .timeline-item:hover {
   transform: translateX(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .timeline-date {
@@ -758,8 +789,9 @@ onMounted(() => {
 
 .date-month {
   font-size: 12px;
-  color: #9ca3af;
+  color: #b0b0b0;
   margin-top: 4px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-dot {
@@ -782,18 +814,21 @@ onMounted(() => {
   margin: 0 0 8px;
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-summary {
-  color: #6b7280;
+  color: #e0e0e0;
   font-size: 14px;
   margin: 0 0 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-meta {
@@ -802,12 +837,20 @@ onMounted(() => {
   gap: 12px;
 }
 
+.timeline-meta .el-tag {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
 .meta-views {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #9ca3af;
+  color: #b0b0b0;
   font-size: 13px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .pagination {
@@ -815,6 +858,8 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pagination :deep(.el-pagination) {
@@ -823,26 +868,33 @@ onMounted(() => {
 
 .pagination :deep(.el-pagination button) {
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .pagination :deep(.el-pagination .el-pager li) {
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin: 0 4px;
 }
 
 .pagination :deep(.el-pager li.is-active) {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border-color: #667eea;
 }
 
 .pagination :deep(.el-pagination__total) {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
   padding: 6px 12px;
   border-radius: 8px;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .fade-enter-active,
@@ -856,38 +908,18 @@ onMounted(() => {
   transform: translateY(20px);
 }
 
+:deep(.el-empty__description) {
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
 @media (max-width: 768px) {
   .articles-page {
     padding: 16px;
-    border-radius: 0;
-  }
-
-  .card-inner {
-    flex-direction: column;
-  }
-
-  .card-image {
-    width: 100%;
-    height: 160px;
-  }
-
-  .card-meta {
-    flex-wrap: wrap;
-    gap: 12px;
   }
 
   .header h2 {
     font-size: 22px;
-  }
-
-  .timeline-item {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .timeline-date {
-    flex-direction: row;
-    gap: 8px;
   }
 
   .date-day {

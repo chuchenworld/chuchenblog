@@ -26,7 +26,7 @@ public class Post {
     private LocalDateTime createTime;
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> tags;
-    
+
     @TableField(exist = false)
     private String authorName;
 }

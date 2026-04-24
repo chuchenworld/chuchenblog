@@ -1,7 +1,22 @@
 <template>
   <div class="app-container">
-    <!-- 全局背景图 -->
-    <div class="global-background" :style="bgUrl ? { backgroundImage: `url(${bgUrl})` } : {}">
+    <!-- 全局背景 -->
+    <div class="global-background">
+      <video
+        v-if="bgUrl && isVideo(bgUrl)"
+        :src="bgUrl"
+        class="bg-media"
+        autoplay
+        muted
+        loop
+        playsinline
+      />
+      <img
+        v-else-if="bgUrl"
+        :src="bgUrl"
+        class="bg-media"
+        alt="背景"
+      />
       <div class="background-overlay"></div>
     </div>
     <router-view />
@@ -13,8 +28,12 @@ import { ref, onMounted } from 'vue'
 
 const bgUrl = ref('')
 
+const isVideo = (url) => {
+  return url && url.toLowerCase().endsWith('.mp4')
+}
+
 async function fetchHomeBackground() {
-  console.log('【App.vue】开始获取全局背景图')
+  console.log('【App.vue】开始获取全局背景')
   try {
     const response = await fetch('/api/config/home-bg')
     if (response.ok) {
@@ -28,9 +47,9 @@ async function fetchHomeBackground() {
             url = window.location.origin + url
           }
           bgUrl.value = url
-          console.log('【App.vue】全局背景图获取成功 (JSON):', bgUrl.value)
+          console.log('【App.vue】全局背景获取成功 (JSON):', bgUrl.value)
         } else {
-          console.warn('【App.vue】全局背景图响应格式异常:', data)
+          console.warn('【App.vue】全局背景响应格式异常:', data)
         }
       } catch (jsonError) {
         // 如果解析失败，直接使用文本作为 URL
@@ -39,11 +58,11 @@ async function fetchHomeBackground() {
           url = window.location.origin + url
         }
         bgUrl.value = url
-        console.log('【App.vue】全局背景图获取成功 (String):', bgUrl.value)
+        console.log('【App.vue】全局背景获取成功 (String):', bgUrl.value)
       }
     }
   } catch (error) {
-    console.error('【App.vue】全局背景图获取失败:', error.message)
+    console.error('【App.vue】全局背景获取失败:', error.message)
   }
 }
 
@@ -65,10 +84,18 @@ onMounted(() => {
   width: 100vw;
   height: 100vh;
   z-index: -1;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   background-color: #1a1a1a; /* 备用背景色 */
+  overflow: hidden;
+}
+
+.bg-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .background-overlay {
@@ -78,5 +105,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.4); /* 半透明黑色遮罩 */
+  z-index: 1;
 }
 </style>

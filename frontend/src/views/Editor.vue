@@ -45,6 +45,29 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-item">
+          <label class="form-label">背景图</label>
+          <div class="image-upload-container">
+            <input
+              type="file"
+              accept="image/*"
+              class="image-upload-input"
+              @change="handleCoverImageUpload"
+            />
+            <div v-if="form.coverImage" class="image-preview">
+              <img :src="form.coverImage" alt="背景图预览" />
+              <button type="button" class="remove-image-btn" @click="form.coverImage = ''">
+                移除
+              </button>
+            </div>
+            <div v-else class="image-upload-placeholder">
+              点击上传背景图
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="tags-input-container">
         <label class="form-label">文章标签</label>
         <el-select
@@ -73,6 +96,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePostStore } from '@/stores/post'
+import { ElMessage } from 'element-plus'
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
 import request from '@/utils/request'
@@ -147,7 +171,7 @@ onMounted(async () => {
     upload: {
       url: '/api/admin/upload',
       fieldName: 'file',
-      max: 10 * 1024 * 1024,
+      max: 50 * 1024 * 1024,
       multiple: false,
       accept: 'image/*',
       token: () => {
@@ -191,6 +215,33 @@ async function loadPostData(id) {
   } catch (error) {
     console.error('加载文章失败:', error)
     alert('加载文章失败')
+  }
+}
+
+async function handleCoverImageUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const isLt50M = file.size / 1024 / 1024 < 50
+  if (!isLt50M) {
+    ElMessage.error('文件大小不能超过 50MB')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const response = await request.post('/admin/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      }
+    })
+    form.value.coverImage = response.data
+  } catch (error) {
+    console.error('上传背景图失败:', error)
+    ElMessage.error('上传背景图失败')
   }
 }
 
@@ -320,6 +371,73 @@ async function handleSubmit() {
 
 .tags-input-container {
   margin-bottom: 20px;
+}
+
+.image-upload-container {
+  position: relative;
+  width: 100%;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  background-color: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.image-upload-container:hover {
+  border-color: #409eff;
+  background-color: #f0f9ff;
+}
+
+.image-upload-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.image-upload-placeholder {
+  color: #909399;
+  font-size: 14px;
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 4px;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.remove-image-btn:hover {
+  background-color: #ff7875;
 }
 
 .vditor-container {

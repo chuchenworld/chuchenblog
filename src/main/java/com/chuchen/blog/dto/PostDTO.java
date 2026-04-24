@@ -1,7 +1,6 @@
 package com.chuchen.blog.dto;
 
 import lombok.Data;
-
 import java.util.List;
 
 @Data
