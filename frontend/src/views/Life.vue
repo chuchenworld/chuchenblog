@@ -100,20 +100,26 @@ onMounted(() => {
 
 <style scoped>
 .life-page {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .header {
-  margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .header h2 {
   margin: 0;
   color: #303133;
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .photo-gallery {
@@ -122,51 +128,62 @@ onMounted(() => {
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 .photo-card {
   transition: all 0.3s;
   overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .photo-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .photo-img-container {
   width: 100%;
-  height: 200px;
+  height: 220px;
   overflow: hidden;
+  border-radius: 8px 8px 0 0;
 }
 
 .photo-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.3s ease;
 }
 
 .photo-card:hover .photo-img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .photo-info {
-  padding: 12px;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .photo-name {
   margin: 0 0 8px 0;
   font-size: 16px;
+  font-weight: 500;
   color: #303133;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .photo-date {
   margin: 0;
   font-size: 14px;
-  color: #909399;
+  color: #606266;
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .empty-state {

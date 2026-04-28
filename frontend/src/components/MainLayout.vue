@@ -28,7 +28,7 @@
             <el-menu-item index="/links">友情链接</el-menu-item>
             <el-menu-item v-if="authStore.isAdmin" index="/admin">管理后台</el-menu-item>
             <el-menu-item v-if="!authStore.isAuthenticated" index="/login">登录</el-menu-item>
-            <el-menu-item v-else>
+            <el-menu-item v-else index="/profile">
               <el-dropdown @command="handleCommand">
                 <span class="user-info">
                   {{ authStore.username }}

@@ -74,6 +74,24 @@ export const usePostStore = defineStore('post', () => {
     }
   }
 
+  function incrementCommentCount(articleId) {
+    console.log('【PostStore】增加文章评论数，文章ID:', articleId)
+    const post = posts.value.find(p => p.id === parseInt(articleId))
+    if (post) {
+      post.commentCount = (post.commentCount || 0) + 1
+      console.log('【PostStore】评论数更新成功')
+    }
+  }
+
+  function decrementCommentCount(articleId) {
+    console.log('【PostStore】减少文章评论数，文章ID:', articleId)
+    const post = posts.value.find(p => p.id === parseInt(articleId))
+    if (post && post.commentCount > 0) {
+      post.commentCount = post.commentCount - 1
+      console.log('【PostStore】评论数更新成功')
+    }
+  }
+
   return {
     posts,
     currentPost,
@@ -82,6 +100,8 @@ export const usePostStore = defineStore('post', () => {
     fetchPostById,
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    incrementCommentCount,
+    decrementCommentCount
   }
 })

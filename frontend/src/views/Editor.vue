@@ -190,8 +190,8 @@ onMounted(async () => {
   const id = route.query.id
   if (id) {
     isEdit.value = true
-    postId.value = id
-    await loadPostData(id)
+    postId.value = parseInt(id, 10)
+    await loadPostData(postId.value)
   }
 })
 
@@ -203,18 +203,26 @@ onUnmounted(() => {
 
 async function loadPostData(id) {
   try {
-    const post = await postStore.fetchPostById(id)
-    form.value.title = post.data.title
-    form.value.content = post.data.content
-    form.value.summary = post.data.summary
-    form.value.coverImage = post.data.coverImage
-    form.value.status = post.data.status || 1
-    form.value.tags = post.data.tags || []
-    form.value.categoryId = post.data.categoryId || null
-    vditor.value.setValue(post.data.content)
+    const res = await postStore.fetchPostById(id)
+    if (!res.data) {
+      console.error('文章数据为空')
+      ElMessage.error('文章不存在')
+      return
+    }
+    const post = res.data
+    form.value.title = post.title || ''
+    form.value.content = post.content || ''
+    form.value.summary = post.summary || ''
+    form.value.coverImage = post.coverImage || ''
+    form.value.status = post.status || 1
+    form.value.tags = post.tags || []
+    form.value.categoryId = post.categoryId || null
+    if (vditor.value) {
+      vditor.value.setValue(post.content || '')
+    }
   } catch (error) {
     console.error('加载文章失败:', error)
-    alert('加载文章失败')
+    ElMessage.error('文章加载失败')
   }
 }
 

@@ -122,6 +122,12 @@ const routes = [
         name: 'AdminUsers',
         component: () => import('@/views/admin/UserManagement.vue'),
         meta: { title: '用户管理' }
+      },
+      {
+        path: 'comments/:articleId',
+        name: 'AdminComments',
+        component: () => import('@/views/admin/CommentManage.vue'),
+        meta: { title: '评论管理' }
       }
     ]
   }

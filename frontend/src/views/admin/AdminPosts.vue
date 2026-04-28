@@ -72,6 +72,10 @@
                   <el-icon><Edit /></el-icon>
                   编辑
                 </el-button>
+                <el-button type="warning" size="small" class="mr-2" @click="handleManageComments(post)">
+                  <el-icon><Message /></el-icon>
+                  评论
+                </el-button>
                 <el-button type="danger" size="small" @click="handleDeletePost(post)">
                   <el-icon><Delete /></el-icon>
                   删除
@@ -139,7 +143,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Plus, Search, Edit, Delete, Collection } from '@element-plus/icons-vue'
+import { Plus, Search, Edit, Delete, Collection, Message } from '@element-plus/icons-vue'
 import { usePostStore } from '@/stores/post'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
@@ -207,6 +211,10 @@ function handleCreatePost() {
 
 function handleEditPost(post) {
   router.push(`/editor?id=${post.id}`)
+}
+
+function handleManageComments(post) {
+  router.push(`/admin/comments/${post.id}`)
 }
 
 async function handleDeletePost(post) {

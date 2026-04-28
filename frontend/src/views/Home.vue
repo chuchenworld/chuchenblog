@@ -27,10 +27,13 @@
                 <p class="article-summary">{{ post.summary || post.content?.substring(0, 100) || '暂无内容' }}</p>
                 <div class="article-footer">
                   <span class="article-info">
-                    <el-icon><view /></el-icon> {{ post.viewCount || post.views || 0 }}
+                    <el-icon><View /></el-icon> {{ post.viewCount || post.views || 0 }}
                   </span>
                   <span class="article-info">
-                    <el-icon><calendar /></el-icon> {{ formatDate(post.createTime || post.createdAt) }}
+                    <el-icon><ChatLineSquare /></el-icon> {{ post.commentCount || 0 }}
+                  </span>
+                  <span class="article-info">
+                    <el-icon><Calendar /></el-icon> {{ formatDate(post.createTime || post.createdAt) }}
                   </span>
                 </div>
               </div>
@@ -43,7 +46,7 @@
         </div>
 
         <!-- 侧边栏绝对定位：悬浮在页面的最右侧，不再占用文章区域的空间 -->
-        <div class="hidden lg:block absolute right-0 top-0 w-80">
+        <div class="hidden lg:block absolute right-0 top-0 w-56 h-screen overflow-y-auto">
           <div class="sticky top-24 space-y-6">
             <el-card class="mb-6 glass-card">
               <div class="text-center">
@@ -82,7 +85,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Calendar } from '@element-plus/icons-vue'
+import { Calendar, ChatLineSquare, View } from '@element-plus/icons-vue'
 import MainLayout from '@/components/MainLayout.vue'
 import { usePostStore } from '@/stores/post'
 import { getSiteConfig } from '@/api/config'
