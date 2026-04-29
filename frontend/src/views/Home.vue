@@ -242,7 +242,6 @@ onMounted(() => {
   background-color: transparent;
   padding-top: 100px;
   padding-bottom: 60px;
-  min-width: 1200px;
 }
 
 .hero-section {
@@ -338,26 +337,105 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .home-container {
+    padding-top: 80px;
+    padding-bottom: 40px;
+  }
+  
   .hero-section {
-    padding: 40px 15px;
+    padding: 30px 15px;
+    min-height: 40vh;
+    margin-bottom: 40px;
   }
 
   .hero-title {
-    font-size: 2rem;
-    letter-spacing: 4px;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    line-height: 1.4;
   }
 
   .hero-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   
   .article-card {
     width: 100%;
     max-width: none;
+    min-height: 180px;
+  }
+  
+  .article-overlay {
+    padding: 16px;
+  }
+  
+  .article-title {
+    font-size: 16px;
+  }
+  
+  .article-summary {
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  
+  .article-footer {
+    font-size: 12px;
+    gap: 12px;
   }
   
   .glass-card {
     width: 100%;
+  }
+  
+  .pagination {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-container {
+    padding-top: 70px;
+  }
+  
+  .hero-section {
+    padding: 20px 12px;
+    min-height: 35vh;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .article-card {
+    min-height: 160px;
+  }
+  
+  .article-overlay {
+    padding: 12px;
+  }
+  
+  .article-title {
+    font-size: 15px;
+  }
+  
+  .article-summary {
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  
+  .article-footer {
+    font-size: 11px;
+    gap: 10px;
+  }
+  
+  .tag-cloud {
+    gap: 8px;
   }
 }
 

@@ -381,7 +381,6 @@ onMounted(() => {
 .articles-page {
   background: transparent;
   min-height: calc(100vh - 120px);
-  min-width: 1200px;
 }
 
 .header {
@@ -915,15 +914,168 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .articles-page {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
 
   .header h2 {
     font-size: 22px;
   }
 
+  .view-toggle {
+    width: 100%;
+  }
+
+  .card-inner {
+    flex-direction: column;
+  }
+
+  .card-image {
+    width: 100%;
+    min-height: 140px;
+  }
+
+  .card-content {
+    padding: 16px;
+  }
+
+  .card-title {
+    font-size: 17px;
+  }
+
+  .card-summary {
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    margin-bottom: 12px;
+  }
+
+  .card-meta {
+    gap: 12px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .timeline-container {
+    padding: 10px 0;
+  }
+
+  .timeline-year {
+    margin-bottom: 24px;
+  }
+
+  .timeline-header {
+    margin-bottom: 16px;
+  }
+
+  .timeline-year-badge {
+    font-size: 16px;
+    padding: 6px 16px;
+  }
+
+  .timeline-year-line {
+    margin-left: 12px;
+  }
+
+  .timeline-items {
+    padding-left: 20px;
+  }
+
+  .timeline-items::before {
+    left: 6px;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .timeline-date {
+    flex-direction: row;
+    min-width: auto;
+    gap: 8px;
+  }
+
   .date-day {
     font-size: 20px;
+  }
+
+  .date-month {
+    margin-top: 0;
+    font-size: 11px;
+  }
+
+  .timeline-dot {
+    left: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+  }
+
+  .timeline-title {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-summary {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .pagination {
+    padding: 10px;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .articles-page {
+    padding: 8px;
+  }
+
+  .header h2 {
+    font-size: 20px;
+  }
+
+  .card-content {
+    padding: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .card-summary {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .card-meta {
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .timeline-item {
+    padding: 12px;
+  }
+
+  .timeline-title {
+    font-size: 15px;
+  }
+
+  .timeline-summary {
+    font-size: 12px;
   }
 }
 </style>

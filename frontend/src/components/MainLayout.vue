@@ -3,7 +3,9 @@
     <el-header class="header">
       <div class="header-content">
         <h1 class="logo" @click="$router.push('/')">初尘博客</h1>
-        <div class="menu-container">
+        
+        <!-- PC端菜单 -->
+        <div class="menu-container desktop-menu">
           <el-menu mode="horizontal" :ellipsis="false" router>
             <el-menu-item index="/">首页</el-menu-item>
 
@@ -44,10 +46,48 @@
             </el-menu-item>
           </el-menu>
         </div>
+
+        <!-- 移动端汉堡菜单按钮 -->
+        <button class="mobile-menu-btn" @click="toggleMobileMenu" aria-label="菜单">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
+
+      <!-- 移动端菜单面板 -->
+      <transition name="slide-down">
+        <div v-if="showMobileMenu" class="mobile-menu-panel">
+          <div class="mobile-menu-content">
+            <div class="mobile-menu-item" @click="handleMobileNav('/')">首页</div>
+            <div class="mobile-menu-item has-submenu" @click="toggleMobileCategory">
+              文章
+              <el-icon :class="{ 'rotate': showMobileCategory }"><arrow-right /></el-icon>
+            </div>
+            <div v-show="showMobileCategory" class="mobile-submenu">
+              <div v-for="cat in categories" :key="cat.id" class="mobile-submenu-item" @click="handleMobileCategoryNav(cat.id)">
+                {{ cat.name }}
+              </div>
+            </div>
+            <div class="mobile-menu-item" @click="handleMobileNav('/life')">生活</div>
+            <div class="mobile-menu-item" @click="handleMobileNav('/about')">个人</div>
+            <div class="mobile-menu-item" @click="handleMobileNav('/messages')">留言</div>
+            <div class="mobile-menu-item" @click="handleMobileNav('/links')">友情链接</div>
+            <div v-if="authStore.isAdmin" class="mobile-menu-item" @click="handleMobileNav('/admin')">管理后台</div>
+            <div v-if="!authStore.isAuthenticated" class="mobile-menu-item" @click="handleMobileNav('/login')">登录</div>
+            <div v-else class="mobile-menu-item has-submenu" @click="toggleMobileUser">
+              {{ authStore.username }}
+              <el-icon :class="{ 'rotate': showMobileUser }"><arrow-right /></el-icon>
+            </div>
+            <div v-show="showMobileUser" class="mobile-submenu">
+              <div class="mobile-submenu-item" @click="handleMobileNav('/profile')">个人中心</div>
+              <div class="mobile-submenu-item" @click="handleMobileLogout">退出登录</div>
+            </div>
+          </div>
+        </div>
+      </transition>
     </el-header>
     <el-main class="main-content">
-      <!-- 新增一个内部容器来控制内容宽度，但允许背景全屏 -->
       <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <slot />
       </div>
@@ -58,7 +98,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowRight } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import request from '@/utils/request'
 
@@ -67,13 +107,17 @@ const authStore = useAuthStore()
 const categories = ref([])
 const showCategoryMenu = ref(false)
 
+// 移动端状态
+const showMobileMenu = ref(false)
+const showMobileCategory = ref(false)
+const showMobileUser = ref(false)
+
 async function fetchCategories() {
   try {
     const res = await request.get('/categories')
     categories.value = res.data || []
   } catch (err) {
     console.error('获取分类失败:', err)
-    // 使用默认分类数据
     categories.value = [
       { id: 1, name: '前端开发', articleCount: 0 },
       { id: 2, name: '后端开发', articleCount: 0 },
@@ -112,6 +156,47 @@ function handleCommand(command) {
   }
 }
 
+// 移动端菜单函数
+function toggleMobileMenu() {
+  showMobileMenu.value = !showMobileMenu.value
+  if (showMobileMenu.value) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+    showMobileCategory.value = false
+    showMobileUser.value = false
+  }
+}
+
+function toggleMobileCategory() {
+  showMobileCategory.value = !showMobileCategory.value
+  showMobileUser.value = false
+}
+
+function toggleMobileUser() {
+  showMobileUser.value = !showMobileUser.value
+  showMobileCategory.value = false
+}
+
+function handleMobileNav(path) {
+  router.push(path)
+  showMobileMenu.value = false
+  document.body.style.overflow = ''
+}
+
+function handleMobileCategoryNav(categoryId) {
+  router.push(`/categories/${categoryId}`)
+  showMobileMenu.value = false
+  document.body.style.overflow = ''
+}
+
+function handleMobileLogout() {
+  authStore.logout()
+  router.push('/login')
+  showMobileMenu.value = false
+  document.body.style.overflow = ''
+}
+
 onMounted(() => {
   fetchCategories()
 })
@@ -129,7 +214,8 @@ onMounted(() => {
   width: 100%;
   z-index: 1000;
   padding: 0;
-  background-color: transparent !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(10px);
   background: none !important;
   box-shadow: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -239,9 +325,158 @@ onMounted(() => {
   border-radius: 10px;
 }
 
+/* 移动端汉堡菜单按钮 */
+.mobile-menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mobile-menu-btn span {
+  width: 24px;
+  height: 2px;
+  background: #fff;
+  margin: 3px 0;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-btn:hover span {
+  background: #ccc;
+}
+
+.mobile-menu-btn.active span:nth-child(1) {
+  transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.mobile-menu-btn.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-btn.active span:nth-child(3) {
+  transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* 移动端菜单面板 */
+.mobile-menu-panel {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  z-index: 999;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-content {
+  padding: 10px 0;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.mobile-menu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-submenu {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-submenu-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 48px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+.mobile-submenu-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.rotate {
+  transform: rotate(90deg);
+  transition: transform 0.3s;
+}
+
+/* 动画 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* 媒体查询 */
 @media (max-width: 768px) {
+  .desktop-menu {
+    display: none;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .header {
+    padding: 5px 0;
+  }
+
+  .header-content {
+    padding: 0 15px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
   .main-content {
-    padding: 100px 15px 40px;
+    min-width: auto;
+    padding: 80px 15px 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    padding: 0 12px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .mobile-menu-item {
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+
+  .mobile-submenu-item {
+    padding: 12px 32px;
+    font-size: 14px;
   }
 }
 

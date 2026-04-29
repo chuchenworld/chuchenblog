@@ -76,6 +76,18 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/album/:id',
+    name: 'AlbumDetail',
+    component: () => import('@/views/AlbumDetail.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/photo/:id',
+    name: 'PhotoDetail',
+    component: () => import('@/views/PhotoDetail.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/admin',
     name: 'Admin',
     component: () => import('@/components/AdminLayout.vue'),
