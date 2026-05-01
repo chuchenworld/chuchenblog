@@ -5,8 +5,8 @@
       <div class="editor-actions">
         <div class="status-selector">
           <el-radio-group v-model="form.status" size="small">
-            <el-radio-button :label="1">发布</el-radio-button>
-            <el-radio-button :label="0">存草稿</el-radio-button>
+            <el-radio-button :value="1">发布</el-radio-button>
+            <el-radio-button :value="0">存草稿</el-radio-button>
           </el-radio-group>
         </div>
         <button @click="handleSubmit" class="publish-btn">
@@ -18,76 +18,80 @@
       </div>
     </div>
     <div class="editor-content">
-      <input
-        v-model="form.title"
-        type="text"
-        class="title-input"
-        placeholder="请输入文章标题"
-        required
-      />
-
-      <div class="form-row">
-        <div class="form-item">
-          <label class="form-label">文章分类</label>
-          <el-select
-            v-model="form.categoryId"
-            placeholder="请选择分类"
-            class="w-full"
-            clearable
-          >
-            <el-option
-              v-for="cat in categories"
-              :key="cat.id"
-              :label="cat.name"
-              :value="cat.id"
-            />
-          </el-select>
-        </div>
+      <!-- 左侧：富文本编辑器 -->
+      <div class="editor-left">
+        <input
+          v-model="form.title"
+          type="text"
+          class="title-input"
+          placeholder="请输入文章标题"
+          required
+        />
+        <div ref="editorRef" class="vditor-container"></div>
       </div>
 
-      <div class="form-row">
-        <div class="form-item">
-          <label class="form-label">背景图</label>
-          <div class="image-upload-container">
-            <input
-              type="file"
-              accept="image/*"
-              class="image-upload-input"
-              @change="handleCoverImageUpload"
-            />
-            <div v-if="form.coverImage" class="image-preview">
-              <img :src="form.coverImage" alt="背景图预览" />
-              <button type="button" class="remove-image-btn" @click="form.coverImage = ''">
-                移除
-              </button>
+      <!-- 右侧：表单区域 -->
+      <div class="editor-right">
+        <div class="form-panel">
+          <div class="form-item">
+            <label class="form-label">文章分类</label>
+            <el-select
+              v-model="form.categoryId"
+              placeholder="请选择分类"
+              class="w-full"
+              clearable
+            >
+              <el-option
+                v-for="cat in categories"
+                :key="cat.id"
+                :label="cat.name"
+                :value="cat.id"
+              />
+            </el-select>
+          </div>
+
+          <div class="form-item">
+            <label class="form-label">背景图</label>
+            <div class="image-upload-container">
+              <input
+                type="file"
+                accept="image/*"
+                class="image-upload-input"
+                @change="handleCoverImageUpload"
+              />
+              <div v-if="form.coverImage" class="image-preview">
+                <img :src="form.coverImage" alt="背景图预览" />
+                <button type="button" class="remove-image-btn" @click="form.coverImage = ''">
+                  移除
+                </button>
+              </div>
+              <div v-else class="image-upload-placeholder">
+                点击上传背景图
+              </div>
             </div>
-            <div v-else class="image-upload-placeholder">
-              点击上传背景图
-            </div>
+          </div>
+
+          <div class="form-item">
+            <label class="form-label">文章标签</label>
+            <el-select
+              v-model="form.tags"
+              multiple
+              filterable
+              allow-create
+              default-first-option
+              placeholder="请输入标签，按回车添加"
+              class="w-full"
+            >
+              <el-option
+                v-for="tag in form.tags"
+                :key="tag"
+                :label="tag"
+                :value="tag"
+              />
+            </el-select>
           </div>
         </div>
       </div>
-
-      <div class="tags-input-container">
-        <label class="form-label">文章标签</label>
-        <el-select
-          v-model="form.tags"
-          multiple
-          filterable
-          allow-create
-          default-first-option
-          placeholder="请输入标签，按回车添加"
-          class="w-full"
-        >
-          <el-option
-            v-for="tag in form.tags"
-            :key="tag"
-            :label="tag"
-            :value="tag"
-          />
-        </el-select>
-      </div>
-      <div ref="editorRef" class="vditor-container"></div>
     </div>
   </div>
 </template>
@@ -174,16 +178,18 @@ onMounted(async () => {
       max: 50 * 1024 * 1024,
       multiple: false,
       accept: 'image/*',
-      token: () => {
-        return localStorage.getItem('token') || ''
-      },
+      token: localStorage.getItem('token') || '',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
       },
       success: (response) => {
-        const data = JSON.parse(response)
-        return data.data
+        const data = typeof response === 'string' ? JSON.parse(response) : response
+        return data.data || data
       }
+    },
+    after: () => {
+      console.log('【Vditor】编辑器初始化完成，绑定粘贴事件')
+      bindEditorEvents()
     }
   })
 
@@ -195,9 +201,148 @@ onMounted(async () => {
   }
 })
 
+// 绑定编辑器事件
+function bindEditorEvents() {
+  if (!editorRef.value) {
+    console.log('【编辑器事件】编辑器容器不存在')
+    return
+  }
+  
+  console.log('【编辑器事件】开始绑定事件到:', editorRef.value)
+  
+  // 绑定粘贴事件
+  editorRef.value.addEventListener('paste', handlePaste)
+  console.log('【编辑器事件】粘贴事件绑定成功')
+  
+  // 绑定拖拽事件
+  editorRef.value.addEventListener('dragover', handleDragOver)
+  editorRef.value.addEventListener('drop', handleDrop)
+  console.log('【编辑器事件】拖拽事件绑定成功')
+}
+
+// 粘贴事件处理 - 支持粘贴截图
+async function handlePaste(event) {
+  console.log('【粘贴事件】检测到粘贴事件:', event)
+  
+  // 获取剪贴板数据
+  const clipboardData = event.clipboardData || window.clipboardData
+  console.log('【粘贴事件】剪贴板数据:', clipboardData)
+  
+  if (!clipboardData) {
+    console.log('【粘贴事件】无法获取剪贴板数据')
+    return
+  }
+
+  const items = clipboardData.items
+  console.log('【粘贴事件】剪贴板items:', items)
+  
+  if (!items || items.length === 0) {
+    console.log('【粘贴事件】剪贴板中没有数据')
+    return
+  }
+
+  console.log('【粘贴事件】剪贴板项目数量:', items.length)
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    console.log(`【粘贴事件】项目 ${i}: type=${item.type}, kind=${item.kind}`)
+    
+    if (item.type.startsWith('image/')) {
+      event.preventDefault()
+      const file = item.getAsFile()
+      console.log('【粘贴事件】获取到图片文件:', file)
+      
+      if (file) {
+        console.log('【粘贴事件】开始上传图片:', file.name, file.size)
+        await uploadAndInsertImage(file)
+      } else {
+        console.log('【粘贴事件】无法从剪贴板获取文件')
+      }
+    }
+  }
+}
+
+// 拖拽事件处理
+function handleDragOver(event) {
+  event.preventDefault()
+  event.dataTransfer.dropEffect = 'copy'
+}
+
+// 放置事件处理 - 支持拖拽上传
+async function handleDrop(event) {
+  event.preventDefault()
+  const files = event.dataTransfer?.files
+  if (!files) return
+
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      await uploadAndInsertImage(file)
+    }
+  }
+}
+
+// 上传图片并插入到编辑器
+async function uploadAndInsertImage(file) {
+  console.log('【图片上传】开始处理图片:', file.name, '大小:', file.size, '类型:', file.type)
+  
+  // 检查文件大小
+  const maxSize = 50 * 1024 * 1024 // 50MB
+  if (file.size > maxSize) {
+    console.log('【图片上传】文件大小超过限制')
+    ElMessage.error('图片大小不能超过 50MB')
+    return
+  }
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    console.log('【图片上传】FormData 已创建，文件:', file.name)
+
+    console.log('【图片上传】开始请求上传接口:', '/api/admin/upload')
+    // request.js 的响应拦截器返回的是 response.data，即 { code, message, data }
+    const res = await request.post('/api/admin/upload', formData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      }
+    })
+
+    console.log('【图片上传】上传成功，完整响应:', res)
+    console.log('【图片上传】res.data (图片URL):', res?.data)
+    console.log('【图片上传】res.code:', res?.code)
+    console.log('【图片上传】vditor.value:', !!vditor.value)
+    
+    // res 的结构是 { code: 200, message: "xxx", data: "图片URL" }
+    if (res?.code === 200 && res?.data && vditor.value) {
+      const imageUrl = res.data
+      console.log('【图片上传】获取到图片URL:', imageUrl)
+      
+      // 使用 Vditor 的 insert 方法插入图片（Markdown 格式）
+      const markdownImage = `![${file.name}](${imageUrl})`
+      console.log('【图片上传】插入 Markdown 图片:', markdownImage)
+      vditor.value.insert(markdownImage)
+      console.log('【图片上传】插入成功!')
+      ElMessage.success('图片上传成功')
+    } else {
+      console.log('【图片上传】插入失败，条件不满足:')
+      console.log('  - res.code === 200:', res?.code === 200)
+      console.log('  - res.data 存在:', !!res?.data)
+      console.log('  - vditor.value 存在:', !!vditor.value)
+    }
+  } catch (error) {
+    console.error('【图片上传】上传失败，错误:', error)
+    ElMessage.error('图片上传失败: ' + (error?.message || '未知错误'))
+  }
+}
+
 onUnmounted(() => {
   if (vditor.value) {
     vditor.value.destroy()
+  }
+  // 移除事件监听
+  if (editorRef.value) {
+    editorRef.value.removeEventListener('paste', handlePaste)
+    editorRef.value.removeEventListener('dragover', handleDragOver)
+    editorRef.value.removeEventListener('drop', handleDrop)
   }
 })
 
@@ -332,23 +477,31 @@ async function handleSubmit() {
 .editor-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  gap: 24px;
   padding: 24px;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
+/* 左侧：编辑器区域 */
+.editor-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .title-input {
   font-size: 24px;
   font-weight: bold;
-  padding: 12px 0;
-  border: none;
-  border-bottom: 1px solid #e4e7ed;
+  padding: 12px 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
   margin-bottom: 20px;
   outline: none;
-  background-color: transparent;
+  background-color: #ffffff;
   color: #333333;
   width: 100%;
   box-sizing: border-box;
@@ -359,14 +512,25 @@ async function handleSubmit() {
   font-weight: normal;
 }
 
-.form-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+/* 右侧：表单区域 */
+.editor-right {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.form-panel {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
 }
 
 .form-item {
-  flex: 1;
+  margin-bottom: 20px;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
 }
 
 .form-label {
@@ -375,10 +539,6 @@ async function handleSubmit() {
   font-size: 14px;
   font-weight: 500;
   color: #606266;
-}
-
-.tags-input-container {
-  margin-bottom: 20px;
 }
 
 .image-upload-container {
@@ -561,7 +721,16 @@ async function handleSubmit() {
   }
 
   .editor-content {
+    flex-direction: column;
     padding: 16px;
+  }
+
+  .editor-left {
+    width: 100%;
+  }
+
+  .editor-right {
+    width: 100%;
   }
 
   .title-input {
@@ -569,7 +738,7 @@ async function handleSubmit() {
   }
 
   .vditor-container {
-    height: calc(100vh - 140px) !important;
+    height: calc(100vh - 380px) !important;
   }
 }
 </style>

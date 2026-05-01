@@ -13,6 +13,7 @@ function generateUUID() {
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || '')
   const username = ref(localStorage.getItem('username') || '')
+  const nickname = ref(localStorage.getItem('nickname') || '')
   const role = ref(localStorage.getItem('role') || '')
   
   // 游客模式相关
@@ -32,9 +33,11 @@ export const useAuthStore = defineStore('auth', () => {
     const res = await request.post('/auth/login', loginForm)
     token.value = res.data.token
     username.value = res.data.username
+    nickname.value = res.data.nickname
     role.value = res.data.role
     localStorage.setItem('token', res.data.token)
     localStorage.setItem('username', res.data.username)
+    localStorage.setItem('nickname', res.data.nickname)
     localStorage.setItem('role', res.data.role)
     return res
   }
@@ -46,15 +49,18 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = ''
     username.value = ''
+    nickname.value = ''
     role.value = ''
     localStorage.removeItem('token')
     localStorage.removeItem('username')
+    localStorage.removeItem('nickname')
     localStorage.removeItem('role')
   }
 
   return {
     token,
     username,
+    nickname,
     role,
     tempUserId,
     isAuthenticated,

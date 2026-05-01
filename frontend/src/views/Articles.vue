@@ -118,7 +118,7 @@
           </div>
         </div>
 
-        <div class="w-full lg:flex-[0_0_300px] flex-shrink-0 mt-8 lg:mt-0">
+        <div class="sidebar w-full lg:flex-[0_0_300px] flex-shrink-0 mt-8 lg:mt-0">
           <div class="sticky top-4">
             <el-card class="archive-card glass-card" shadow="hover">
               <template #header>
@@ -200,7 +200,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Calendar, Grid, Operation, PriceTag, ArrowRight, RefreshRight } from '@element-plus/icons-vue'
+import { Calendar, Grid, Operation, PriceTag, ArrowRight, RefreshRight, View, ChatLineSquare } from '@element-plus/icons-vue'
 import MainLayout from '@/components/MainLayout.vue'
 import request from '@/utils/request'
 
@@ -915,6 +915,12 @@ onMounted(() => {
 @media (max-width: 768px) {
   .articles-page {
     padding: 12px;
+    background-image: url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20night%20sky%20with%20stars%20and%20galaxy%2C%20dark%20purple%20blue%20gradient%2C%20dreamy%20atmosphere%2C%20minimalist%20background&image_size=landscape_16_9');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100vh;
   }
 
   .header {
@@ -930,6 +936,18 @@ onMounted(() => {
     width: 100%;
   }
 
+  .card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .article-card {
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
   .card-inner {
     flex-direction: column;
   }
@@ -937,14 +955,23 @@ onMounted(() => {
   .card-image {
     width: 100%;
     min-height: 140px;
+    border-radius: 16px 16px 0 0;
   }
 
   .card-content {
     padding: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 0 0 16px 16px;
+  }
+
+  .card-header {
+    margin-bottom: 10px;
   }
 
   .card-title {
     font-size: 17px;
+    font-weight: 600;
   }
 
   .card-summary {
@@ -953,14 +980,36 @@ onMounted(() => {
     -webkit-line-clamp: 2;
     line-clamp: 2;
     margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.85);
   }
 
+  /* 移动端文章元数据缩小 */
   .card-meta {
     gap: 12px;
     font-size: 12px;
     margin-bottom: 10px;
+    color: #888;
+    text-shadow: none;
+    opacity: 0.8;
   }
 
+  .card-meta .el-icon {
+    font-size: 12px;
+  }
+
+  /* 移动端标签缩小 */
+  .card-tags {
+    gap: 6px;
+  }
+
+  .card-tags .el-tag {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+    color: #888 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  /* 隐藏侧边栏 */
   .sidebar {
     display: none;
   }
@@ -998,6 +1047,9 @@ onMounted(() => {
     flex-direction: column;
     padding: 14px;
     gap: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
   }
 
   .timeline-date {
@@ -1031,6 +1083,22 @@ onMounted(() => {
   .timeline-summary {
     font-size: 13px;
     margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .timeline-meta {
+    gap: 10px;
+  }
+
+  .timeline-meta .el-tag {
+    font-size: 11px !important;
+    padding: 2px 8px !important;
+    color: #888 !important;
+  }
+
+  .meta-views {
+    font-size: 12px;
+    color: #888;
   }
 
   .pagination {

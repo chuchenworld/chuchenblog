@@ -63,6 +63,24 @@
             <el-icon class="mr-3"><UserFilled /></el-icon>
             <span>用户管理</span>
           </router-link>
+
+          <router-link
+            to="/admin/comments"
+            class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition duration-200"
+            active-class="bg-blue-50 text-blue-600 font-medium"
+          >
+            <el-icon class="mr-3"><Message /></el-icon>
+            <span>留言板管理</span>
+          </router-link>
+
+          <router-link
+            to="/admin/links"
+            class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition duration-200"
+            active-class="bg-blue-50 text-blue-600 font-medium"
+          >
+            <el-icon class="mr-3"><Link /></el-icon>
+            <span>友链管理</span>
+          </router-link>
         </nav>
       </div>
 
@@ -102,6 +120,7 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item command="home">首页</el-dropdown-item>
                 <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -126,7 +145,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { HomeFilled, Document, Picture, Setting, ArrowDown, User, UserFilled } from '@element-plus/icons-vue'
+import { HomeFilled, Document, Picture, Setting, ArrowDown, User, UserFilled, Message, Link } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -137,7 +156,7 @@ const role = ref('')
 const currentRoute = computed(() => route)
 
 onMounted(() => {
-  username.value = localStorage.getItem('username') || '管理员'
+  username.value = localStorage.getItem('nickname') || localStorage.getItem('username') || '未命名用户'
   role.value = localStorage.getItem('role') || 'admin'
 })
 
@@ -145,12 +164,15 @@ const handleCommand = (command) => {
   if (command === 'logout') {
     localStorage.removeItem('token')
     localStorage.removeItem('username')
+    localStorage.removeItem('nickname')
     localStorage.removeItem('role')
 
     ElMessage.success('退出登录成功')
     router.push('/login')
   } else if (command === 'profile') {
     router.push('/admin/profile')
+  } else if (command === 'home') {
+    router.push('/home')
   }
 }
 </script>

@@ -7,6 +7,10 @@ const routes = [
     redirect: '/home'
   },
   {
+    path: '/about',
+    redirect: '/home'
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')
@@ -38,11 +42,6 @@ const routes = [
     component: () => import('@/views/Life.vue')
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('@/views/About.vue')
-  },
-  {
     path: '/messages',
     name: 'Messages',
     component: () => import('@/views/Messages.vue')
@@ -57,12 +56,7 @@ const routes = [
     name: 'PostDetail',
     component: () => import('@/views/PostDetail.vue')
   },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('@/views/Profile.vue'),
-    meta: { requiresAuth: true }
-  },
+  
   {
     path: '/editor',
     name: 'Editor',
@@ -93,6 +87,11 @@ const routes = [
     component: () => import('@/components/AdminLayout.vue'),
     meta: { requiresAuth: true },
     children: [
+      {
+        path: '',
+        name: 'AdminHome',
+        redirect: 'dashboard'
+      },
       {
         path: 'dashboard',
         name: 'AdminDashboard',
@@ -136,10 +135,22 @@ const routes = [
         meta: { title: '用户管理' }
       },
       {
-        path: 'comments/:articleId',
+        path: 'comments',
         name: 'AdminComments',
         component: () => import('@/views/admin/CommentManage.vue'),
-        meta: { title: '评论管理' }
+        meta: { title: '留言板管理' }
+      },
+      {
+        path: 'comments/article/:articleId',
+        name: 'AdminArticleComments',
+        component: () => import('@/views/admin/CommentManage.vue'),
+        meta: { title: '文章评论' }
+      },
+      {
+        path: 'links',
+        name: 'AdminLinks',
+        component: () => import('@/views/admin/AdminLinks.vue'),
+        meta: { title: '友链管理' }
       }
     ]
   }

@@ -340,12 +340,18 @@ onMounted(() => {
   .home-container {
     padding-top: 80px;
     padding-bottom: 40px;
+    background-image: url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20night%20sky%20with%20stars%20and%20galaxy%2C%20dark%20purple%20blue%20gradient%2C%20dreamy%20atmosphere%2C%20minimalist%20background&image_size=landscape_16_9');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
   
   .hero-section {
     padding: 30px 15px;
     min-height: 40vh;
     margin-bottom: 40px;
+    background: none;
   }
 
   .hero-title {
@@ -358,18 +364,37 @@ onMounted(() => {
     font-size: 0.95rem;
   }
   
+  /* 移动端文章卡片优化 */
+  .article-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
   .article-card {
     width: 100%;
     max-width: none;
-    min-height: 180px;
+    min-height: 200px;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+    overflow: hidden;
   }
   
   .article-overlay {
-    padding: 16px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+  }
+  
+  .article-header {
+    margin-bottom: 12px;
   }
   
   .article-title {
-    font-size: 16px;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.4;
   }
   
   .article-summary {
@@ -377,19 +402,50 @@ onMounted(() => {
     line-height: 1.6;
     -webkit-line-clamp: 3;
     line-clamp: 3;
+    color: rgba(255, 255, 255, 0.85);
   }
   
+  /* 移动端文章元数据缩小 */
   .article-footer {
     font-size: 12px;
-    gap: 12px;
+    gap: 15px;
+    color: #888;
+    text-shadow: none;
+    margin-top: 12px;
   }
   
-  .glass-card {
-    width: 100%;
+  .article-info {
+    opacity: 0.8;
+  }
+  
+  .article-info svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .header h2 {
+    font-size: 18px;
+    font-weight: 600;
   }
   
   .pagination {
     justify-content: center;
+    padding: 10px 0;
+  }
+  
+  /* 隐藏侧边栏 */
+  .hidden.lg\\:block {
+    display: none !important;
+  }
+  
+  /* 调整内容区域 */
+  .w-full.px-4.sm\\:px-6.lg\\:px-12 {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .w-full.max-w-3xl.mx-auto {
+    max-width: 100%;
   }
 }
 
@@ -413,15 +469,15 @@ onMounted(() => {
   }
   
   .article-card {
-    min-height: 160px;
+    min-height: 180px;
   }
   
   .article-overlay {
-    padding: 12px;
+    padding: 16px;
   }
   
   .article-title {
-    font-size: 15px;
+    font-size: 16px;
   }
   
   .article-summary {
@@ -431,11 +487,16 @@ onMounted(() => {
   
   .article-footer {
     font-size: 11px;
-    gap: 10px;
+    gap: 12px;
   }
   
   .tag-cloud {
     gap: 8px;
+  }
+  
+  .w-full.px-4.sm\\:px-6.lg\\:px-12 {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 

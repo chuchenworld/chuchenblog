@@ -11,7 +11,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">总文章数</p>
-            <h3 class="text-2xl font-bold text-gray-800 mt-1">128</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalPosts || 0 }}</h3>
           </div>
           <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
             <el-icon class="text-xl"><Document /></el-icon>
@@ -29,7 +29,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">总访问量</p>
-            <h3 class="text-2xl font-bold text-gray-800 mt-1">25,642</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ formatNumber(stats.totalViews || 0) }}</h3>
           </div>
           <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
             <el-icon class="text-xl"><View /></el-icon>
@@ -47,7 +47,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">用户数</p>
-            <h3 class="text-2xl font-bold text-gray-800 mt-1">42</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalUsers || 0 }}</h3>
           </div>
           <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
             <el-icon class="text-xl"><User /></el-icon>
@@ -65,7 +65,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">留言数</p>
-            <h3 class="text-2xl font-bold text-gray-800 mt-1">256</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ stats.totalComments || 0 }}</h3>
           </div>
           <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">
             <el-icon class="text-xl"><ChatLineSquare /></el-icon>
@@ -87,43 +87,22 @@
           <h2 class="text-lg font-semibold text-gray-800">最近文章</h2>
         </div>
         <div class="p-6">
-          <div class="space-y-4">
-            <div class="flex items-start">
+          <div class="space-y-4" v-if="stats.recentPosts && stats.recentPosts.length > 0">
+            <div class="flex items-start" v-for="post in stats.recentPosts" :key="post.id">
               <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-500 mr-4">
                 <el-icon><Document /></el-icon>
               </div>
               <div class="flex-1">
-                <h3 class="font-medium text-gray-800">Vue 3 组合式 API 最佳实践</h3>
-                <p class="text-sm text-gray-500 mt-1">2026-04-20</p>
+                <h3 class="font-medium text-gray-800">{{ post.title }}</h3>
+                <p class="text-sm text-gray-500 mt-1">{{ formatDate(post.createTime) }}</p>
               </div>
               <div class="text-sm text-gray-500">
-                <el-icon class="mr-1"><View /></el-icon> 128
+                <el-icon class="mr-1"><View /></el-icon> {{ post.viewCount || 0 }}
               </div>
             </div>
-            <div class="flex items-start">
-              <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-500 mr-4">
-                <el-icon><Document /></el-icon>
-              </div>
-              <div class="flex-1">
-                <h3 class="font-medium text-gray-800">Spring Boot 3 新特性介绍</h3>
-                <p class="text-sm text-gray-500 mt-1">2026-04-18</p>
-              </div>
-              <div class="text-sm text-gray-500">
-                <el-icon class="mr-1"><View /></el-icon> 96
-              </div>
-            </div>
-            <div class="flex items-start">
-              <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-500 mr-4">
-                <el-icon><Document /></el-icon>
-              </div>
-              <div class="flex-1">
-                <h3 class="font-medium text-gray-800">Tailwind CSS 实用技巧</h3>
-                <p class="text-sm text-gray-500 mt-1">2026-04-15</p>
-              </div>
-              <div class="text-sm text-gray-500">
-                <el-icon class="mr-1"><View /></el-icon> 84
-              </div>
-            </div>
+          </div>
+          <div v-else class="text-center py-8">
+            <p class="text-gray-500">暂无文章</p>
           </div>
         </div>
       </div>
@@ -146,10 +125,48 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Document, View, User, ChatLineSquare, ArrowUp } from '@element-plus/icons-vue'
+import request from '@/utils/request'
 
 const username = ref('')
+const stats = ref({
+  totalPosts: 0,
+  totalViews: 0,
+  totalUsers: 0,
+  totalComments: 0,
+  recentPosts: []
+})
 
 onMounted(() => {
   username.value = localStorage.getItem('username') || '管理员'
+  fetchDashboardStats()
 })
+
+async function fetchDashboardStats() {
+  try {
+    const response = await request.get('/admin/dashboard')
+    if (response.data) {
+      stats.value = response.data
+    }
+  } catch (error) {
+    console.error('获取仪表盘数据失败:', error)
+  }
+}
+
+function formatNumber(num) {
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1) + '万'
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'k'
+  }
+  return num.toString()
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 </script>

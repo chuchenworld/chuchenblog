@@ -13,7 +13,7 @@
               v-model="homeSlogan"
               type="textarea"
               placeholder="请输入首页显示的标语"
-              rows="4"
+              :rows="4"
               class="font-chinese"
             />
           </el-form-item>

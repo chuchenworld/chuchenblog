@@ -346,9 +346,15 @@ onMounted(() => {
   commentStore.fetchCommentsByArticleId(route.params.id)
   window.addEventListener('scroll', handleScroll)
   
-  if (authStore.isAuthenticated) {
-    commentForm.nickname = authStore.username
-    commentForm.email = authStore.username + '@example.com'
+  // 从 localStorage 读取用户信息自动填充
+  const nickname = localStorage.getItem('nickname') || authStore.nickname || ''
+  const username = localStorage.getItem('username') || authStore.username || ''
+  
+  if (nickname) {
+    commentForm.nickname = nickname
+  }
+  if (username) {
+    commentForm.email = username
   }
 })
 

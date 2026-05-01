@@ -25,24 +25,15 @@
             </li>
 
             <el-menu-item index="/life">生活</el-menu-item>
-            <el-menu-item index="/about">个人</el-menu-item>
             <el-menu-item index="/messages">留言</el-menu-item>
             <el-menu-item index="/links">友情链接</el-menu-item>
-            <el-menu-item v-if="authStore.isAdmin" index="/admin">管理后台</el-menu-item>
+            <el-menu-item v-if="authStore.isAdmin" index="/admin/dashboard">管理后台</el-menu-item>
             <el-menu-item v-if="!authStore.isAuthenticated" index="/login">登录</el-menu-item>
-            <el-menu-item v-else index="/profile">
-              <el-dropdown @command="handleCommand">
-                <span class="user-info">
-                  {{ authStore.username }}
-                  <el-icon><arrow-down /></el-icon>
-                </span>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+            <el-menu-item v-else index="/home" @click="handleUserClick">
+              <span class="user-info">
+                {{ authStore.nickname || authStore.username }}
+                <el-icon><arrow-down /></el-icon>
+              </span>
             </el-menu-item>
           </el-menu>
         </div>
@@ -55,33 +46,77 @@
         </button>
       </div>
 
-      <!-- 移动端菜单面板 -->
-      <transition name="slide-down">
-        <div v-if="showMobileMenu" class="mobile-menu-panel">
-          <div class="mobile-menu-content">
-            <div class="mobile-menu-item" @click="handleMobileNav('/')">首页</div>
-            <div class="mobile-menu-item has-submenu" @click="toggleMobileCategory">
-              文章
+      <!-- 移动端遮罩层 -->
+      <transition name="fade">
+        <div v-if="showMobileMenu" class="mobile-overlay" @click="toggleMobileMenu"></div>
+      </transition>
+      
+      <!-- 移动端侧滑抽屉菜单 -->
+      <transition name="slide-left">
+        <div v-if="showMobileMenu" class="mobile-drawer">
+          <!-- 博主信息 -->
+          <div class="drawer-header">
+            <div class="avatar-wrapper">
+              <img 
+                :src="authStore.avatar || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20blogger%20avatar%20portrait%2C%20friendly%2C%20minimalist&image_size=square'" 
+                alt="博主头像" 
+                class="drawer-avatar"
+              />
+            </div>
+            <h3 class="drawer-nickname">{{ authStore.nickname || '初尘' }}</h3>
+            <p class="drawer-bio">热爱技术，分享生活</p>
+          </div>
+          
+          <!-- 菜单列表 -->
+          <div class="drawer-menu">
+            <div class="drawer-menu-item" @click="handleMobileNav('/')">
+              <span class="menu-icon">🏠</span>
+              <span>首页</span>
+            </div>
+            <div class="drawer-menu-item has-submenu" @click="toggleMobileCategory">
+              <span class="menu-icon">📝</span>
+              <span>文章</span>
               <el-icon :class="{ 'rotate': showMobileCategory }"><arrow-right /></el-icon>
             </div>
-            <div v-show="showMobileCategory" class="mobile-submenu">
-              <div v-for="cat in categories" :key="cat.id" class="mobile-submenu-item" @click="handleMobileCategoryNav(cat.id)">
+            <div v-show="showMobileCategory" class="drawer-submenu">
+              <div v-for="cat in categories" :key="cat.id" class="drawer-submenu-item" @click="handleMobileCategoryNav(cat.id)">
                 {{ cat.name }}
               </div>
             </div>
-            <div class="mobile-menu-item" @click="handleMobileNav('/life')">生活</div>
-            <div class="mobile-menu-item" @click="handleMobileNav('/about')">个人</div>
-            <div class="mobile-menu-item" @click="handleMobileNav('/messages')">留言</div>
-            <div class="mobile-menu-item" @click="handleMobileNav('/links')">友情链接</div>
-            <div v-if="authStore.isAdmin" class="mobile-menu-item" @click="handleMobileNav('/admin')">管理后台</div>
-            <div v-if="!authStore.isAuthenticated" class="mobile-menu-item" @click="handleMobileNav('/login')">登录</div>
-            <div v-else class="mobile-menu-item has-submenu" @click="toggleMobileUser">
-              {{ authStore.username }}
-              <el-icon :class="{ 'rotate': showMobileUser }"><arrow-right /></el-icon>
+            <div class="drawer-menu-item" @click="handleMobileNav('/life')">
+              <span class="menu-icon">💭</span>
+              <span>碎碎念</span>
             </div>
-            <div v-show="showMobileUser" class="mobile-submenu">
-              <div class="mobile-submenu-item" @click="handleMobileNav('/profile')">个人中心</div>
-              <div class="mobile-submenu-item" @click="handleMobileLogout">退出登录</div>
+            <div class="drawer-menu-item" @click="handleMobileNav('/messages')">
+              <span class="menu-icon">📬</span>
+              <span>留言</span>
+            </div>
+            <div class="drawer-menu-item" @click="handleMobileNav('/links')">
+              <span class="menu-icon">🔗</span>
+              <span>友情链接</span>
+            </div>
+          </div>
+          
+          <!-- 底部操作 -->
+          <div class="drawer-footer">
+            <div v-if="authStore.isAdmin" class="drawer-menu-item admin-item" @click="handleMobileNav('/admin/dashboard')">
+              <span class="menu-icon">⚙️</span>
+              <span>管理后台</span>
+            </div>
+            <div v-if="!authStore.isAuthenticated" class="drawer-menu-item" @click="handleMobileNav('/login')">
+              <span class="menu-icon">🔐</span>
+              <span>登录</span>
+            </div>
+            <div v-else>
+              <div class="drawer-menu-item has-submenu" @click="toggleMobileUser">
+                <span class="menu-icon">👤</span>
+                <span>{{ authStore.nickname || authStore.username }}</span>
+                <el-icon :class="{ 'rotate': showMobileUser }"><arrow-right /></el-icon>
+              </div>
+              <div v-show="showMobileUser" class="drawer-submenu">
+                <div v-if="authStore.isAdmin" class="drawer-submenu-item" @click="handleMobileNav('/admin/profile')">个人中心</div>
+                <div class="drawer-submenu-item danger" @click="handleMobileLogout">退出登录</div>
+              </div>
             </div>
           </div>
         </div>
@@ -147,13 +182,8 @@ function hideCategoryMenu() {
   }, 200)
 }
 
-function handleCommand(command) {
-  if (command === 'logout') {
-    authStore.logout()
-    router.push('/login')
-  } else if (command === 'profile') {
-    router.push('/profile')
-  }
+function handleUserClick() {
+  router.push('/home')
 }
 
 // 移动端菜单函数
@@ -364,72 +394,161 @@ onMounted(() => {
   transform: rotate(45deg) translate(-5px, -6px);
 }
 
-/* 移动端菜单面板 */
-.mobile-menu-panel {
+/* 移动端遮罩层 */
+.mobile-overlay {
   position: fixed;
-  top: 60px;
+  top: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 999;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 998;
 }
 
-.mobile-menu-content {
+/* 移动端侧滑抽屉 */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 85%;
+  max-width: 320px;
+  height: 100vh;
+  background: rgba(20, 20, 30, 0.98);
+  backdrop-filter: blur(20px);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drawer-header {
+  padding: 60px 20px 30px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-wrapper {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.drawer-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-nickname {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.drawer-bio {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.drawer-menu {
+  flex: 1;
+  overflow-y: auto;
   padding: 10px 0;
 }
 
-.mobile-menu-item {
+.drawer-menu-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 16px 24px;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
   min-height: 44px;
   box-sizing: border-box;
+  gap: 12px;
 }
 
-.mobile-menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+.drawer-menu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.mobile-submenu {
-  background: rgba(255, 255, 255, 0.05);
+.drawer-menu-item.has-submenu {
+  justify-content: space-between;
 }
 
-.mobile-submenu-item {
+.drawer-menu-item.has-submenu span:first-of-type {
+  flex: 1;
   display: flex;
   align-items: center;
-  padding: 14px 48px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 12px;
+}
+
+.menu-icon {
+  font-size: 18px;
+}
+
+.drawer-submenu {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.drawer-submenu-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px 14px 60px;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 15px;
   cursor: pointer;
   min-height: 44px;
   box-sizing: border-box;
 }
 
-.mobile-submenu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+.drawer-submenu-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.drawer-submenu-item.danger {
+  color: #ff6b6b;
+}
+
+.drawer-footer {
+  padding: 10px 0 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drawer-footer .drawer-menu-item.admin-item {
+  color: #4ecdc4;
+}
+
+/* 动画 */
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-left-enter-from,
+.slide-left-leave-to {
+  transform: translateX(-100%);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .rotate {
   transform: rotate(90deg);
   transition: transform 0.3s;
-}
-
-/* 动画 */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from,
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 
 /* 媒体查询 */
