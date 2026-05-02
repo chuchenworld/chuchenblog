@@ -224,7 +224,11 @@ const loadLinks = async () => {
   try {
     const response = await request.get('/friend-links')
     if (response.data) {
-      allLinks.value = response.data
+      // 将 status 字段转换为数字类型
+      allLinks.value = response.data.map(link => ({
+        ...link,
+        status: parseInt(link.status) || 0
+      }))
     }
   } catch (error) {
     console.error('加载友链失败:', error)
