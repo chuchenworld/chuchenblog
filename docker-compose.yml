@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: chuchenblog-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: chuchenblog
+      MYSQL_USER: chuchenblog
+      MYSQL_PASSWORD: chuchenblog
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - chuchenblog-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chuchenblog-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: chuchenblog
+      DB_USER: chuchenblog
+      DB_PASSWORD: chuchenblog
+      DOMAIN: localhost
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mysql
+    networks:
+      - chuchenblog-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: chuchenblog-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+    networks:
+      - chuchenblog-network
+    restart: unless-stopped
+
+networks:
+  chuchenblog-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

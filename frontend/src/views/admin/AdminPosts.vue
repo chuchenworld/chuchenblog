@@ -214,7 +214,7 @@ function handleEditPost(post) {
 }
 
 function handleManageComments(post) {
-  router.push(`/admin/comments/${post.id}`)
+  router.push(`/admin/comments/article/${post.id}`)
 }
 
 async function handleDeletePost(post) {

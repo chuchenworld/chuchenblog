@@ -144,7 +144,7 @@
                           </el-icon>
                           {{ year.year }}年
                         </span>
-                        <el-tag type="primary" size="small" effect="plain">{{ year.total }}</el-tag>
+                        <span class="year-count">{{ year.total }}</span>
                       </div>
                     </template>
                     <ul class="month-list">
@@ -186,7 +186,7 @@
                   @click="selectCategory(cat.id)"
                 >
                   <span class="category-name">{{ cat.name }}</span>
-                  <el-tag type="info" size="small">{{ cat.articleCount || 0 }}</el-tag>
+                  <span class="category-count">{{ cat.articleCount || 0 }}</span>
                 </div>
               </div>
             </el-card>
@@ -535,38 +535,37 @@ onMounted(() => {
 }
 
 .glass-card {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(10px);
-  border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
-  padding: 20px !important;
-  margin-bottom: 20px !important;
+  background-color: transparent !important;
+  backdrop-filter: none;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  padding: 16px !important;
+  margin-bottom: 16px !important;
 }
 
 .archive-card :deep(.el-card__header),
 .category-card :deep(.el-card__header) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 16px 20px;
-  border-bottom: none !important;
+  background: transparent;
+  color: #ffffff;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .archive-card :deep(.el-card__header) span,
 .category-card :deep(.el-card__header) span {
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .custom-collapse :deep(.el-collapse-item__header) {
   background: transparent;
   border: none;
-  height: 48px;
-  line-height: 48px;
-  padding: 0 8px;
-  font-size: 15px;
+  height: 44px;
+  line-height: 44px;
+  padding: 0;
+  font-size: 14px;
   color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .custom-collapse :deep(.el-collapse-item__wrap) {
@@ -575,7 +574,7 @@ onMounted(() => {
 }
 
 .custom-collapse :deep(.el-collapse-item__content) {
-  padding-bottom: 8px;
+  padding-bottom: 0;
 }
 
 .year-header {
@@ -583,21 +582,20 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
 .year-label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .year-arrow {
   transition: transform 0.3s;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .year-arrow.is-active {
@@ -614,195 +612,175 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 16px;
-  margin: 4px 0;
-  border-radius: 8px;
+  padding: 10px 0;
+  margin: 2px 0;
   cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(102, 126, 234, 0.1);
-  color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s;
+  color: #a0a0a0;
 }
 
 .month-item:hover {
-  background: rgba(102, 126, 234, 0.2);
-  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 8px;
+  border-radius: 4px;
 }
 
 .month-item.is-active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 8px;
+  border-radius: 4px;
 }
 
-.month-item.is-active .month-count {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.month-label {
-  font-size: 14px;
+.year-count {
+  color: #888888;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .month-count {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e0e0e0;
-  padding: 2px 10px;
-  border-radius: 12px;
+  color: #888888;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .archive-actions {
-  padding: 12px;
+  padding: 12px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
 .archive-actions :deep(.el-button) {
-  color: #ffffff !important;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  color: #a0a0a0 !important;
 }
 
 .category-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .category-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 10px 0;
   cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all 0.2s;
+  color: #a0a0a0;
 }
 
 .category-item:hover {
-  background: rgba(102, 126, 234, 0.2);
-  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 8px;
+  border-radius: 4px;
 }
 
 .category-item.is-active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 8px;
+  border-radius: 4px;
 }
 
-.category-item.is-active .el-tag {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: transparent;
-  color: white;
-}
-
-.category-item .el-tag {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+.category-item .category-count {
+  color: #888888;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .timeline-container {
-  padding: 20px 0;
+  padding: 16px 0;
 }
 
 .timeline-year {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .timeline-header {
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .timeline-year-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 8px 24px;
-  border-radius: 24px;
-  font-size: 20px;
-  font-weight: 700;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  padding: 6px 20px;
+  border-radius: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .timeline-year-line {
   flex: 1;
-  height: 2px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, transparent 100%);
-  margin-left: 20px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-left: 16px;
 }
 
 .timeline-items {
   position: relative;
-  padding-left: 30px;
+  padding-left: 24px;
 }
 
 .timeline-items::before {
   content: '';
   position: absolute;
-  left: 8px;
+  left: 3px;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .timeline-item {
   position: relative;
   display: flex;
-  gap: 20px;
-  padding: 16px 20px;
-  margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  gap: 16px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
 }
 
 .timeline-item:hover {
-  transform: translateX(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .timeline-date {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 50px;
+  min-width: 44px;
 }
 
 .date-day {
-  font-size: 28px;
-  font-weight: 700;
-  color: #667eea;
+  font-size: 24px;
+  font-weight: 600;
+  color: #a0a0a0;
   line-height: 1;
 }
 
 .date-month {
   font-size: 12px;
-  color: #b0b0b0;
+  color: #888888;
   margin-top: 4px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-dot {
   position: absolute;
-  left: -26px;
-  top: 24px;
-  width: 14px;
-  height: 14px;
-  background: white;
-  border: 3px solid #667eea;
+  left: -22px;
+  top: 22px;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
 .timeline-content {
@@ -811,23 +789,21 @@ onMounted(() => {
 
 .timeline-title {
   margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 500;
   color: #ffffff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-summary {
-  color: #e0e0e0;
-  font-size: 14px;
-  margin: 0 0 12px;
+  color: #a0a0a0;
+  font-size: 13px;
+  margin: 0 0 10px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-meta {

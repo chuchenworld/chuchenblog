@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import router from './router'
 import App from './App.vue'
 import './style.css'
+import 'highlight.js/styles/atom-one-dark.css'
 
 const app = createApp(App)
 const pinia = createPinia()

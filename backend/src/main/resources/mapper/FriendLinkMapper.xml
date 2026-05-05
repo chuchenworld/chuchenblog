@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chuchen.blog.mapper.FriendLinkMapper">
+
+    <select id="selectApprovedLinks" resultType="com.chuchen.blog.entity.FriendLink">
+        SELECT * FROM friend_link 
+        WHERE status = 1 
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAllLinks" resultType="com.chuchen.blog.entity.FriendLink">
+        SELECT * FROM friend_link 
+        ORDER BY status ASC, create_time DESC
+    </select>
+
+</mapper>
