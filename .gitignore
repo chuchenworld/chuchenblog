@@ -39,6 +39,14 @@ build/
 .env.local
 .env.*.local
 
+# Sensitive configuration
+application-secret.yml
+application-secret-*.yml
+application-dev.yml
+application-prod.yml
+# 忽略所有环境配置，但保留主配置文件
+!application.yml
+
 # Uploads
 uploads/
 
