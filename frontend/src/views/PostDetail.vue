@@ -1021,7 +1021,7 @@ onUnmounted(() => {
 
 .prose-container :deep(pre) {
   overflow-x: auto !important;
-  background: #282c34 !important;
+  background: #2B2B2B !important;
   padding: 1rem !important;
   border-radius: 8px !important;
   margin: 1rem 0 !important;
@@ -1029,48 +1029,258 @@ onUnmounted(() => {
   display: block !important;
   width: 100% !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: relative !important;
 }
 
-/* 代码块中的代码（浅色文字，适合深色背景） */
-.prose-container :deep(pre code) {
-  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
-  background: transparent !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  font-size: 0.85em !important;
+/* 代码块内所有元素的默认样式 */
+.prose-container :deep(pre code),
+.prose-container :deep(pre code *) {
+  color: #A9B7C6 !important;
+  font-weight: normal !important;
+  font-style: normal !important;
 }
 
-/* 行内代码（黑色文字） */
+/* IDEA Darcula 风格配色 */
+.prose-container :deep(.hljs-variable),
+.prose-container :deep(.hljs-params),
+.prose-container :deep(.hljs-name) {
+  color: #FFFFFF !important;
+  font-weight: 500 !important;
+}
+
+/* YAML 属性键 - 黄色 */
+.prose-container :deep(.hljs-attr) {
+  color: #FFC66D !important;
+  font-weight: 500 !important;
+}
+
+.prose-container :deep(.hljs-title),
+.prose-container :deep(.hljs-class),
+.prose-container :deep(.hljs-type),
+.prose-container :deep(.hljs-function),
+.prose-container :deep(.hljs-built_in) {
+  color: #FFC66D !important;
+  font-weight: bold !important;
+}
+
+.prose-container :deep(.hljs-keyword),
+.prose-container :deep(.hljs-selector-tag) {
+  color: #CC7832 !important;
+  font-weight: bold !important;
+}
+
+.prose-container :deep(.hljs-string),
+.prose-container :deep(.hljs-literal) {
+  color: #6A8759 !important;
+}
+
+.prose-container :deep(.hljs-comment) {
+  color: #808080 !important;
+  font-style: italic !important;
+}
+
+.prose-container :deep(.hljs-number) {
+  color: #6897BB !important;
+}
+
+/* 行内代码（修复后） */
 .prose-container :deep(:not(pre) > code) {
   font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
   background: #f3f4f6 !important;
-  color: #000000 !important;
   padding: 0.2em 0.4em !important;
   border-radius: 4px !important;
   font-size: 0.85em !important;
 }
 
-/* --- [终极] 代码块布局修复 (请确保这是文件中唯一的定义) --- */
+/* --- [IntelliJ IDEA Darcula 风格 - 已修复变量可见性] --- */
 
-/* 1. 外层容器：建立严格的定位上下文 */
+/* 1. 代码块基础样式 */
 .code-container {
-  position: relative !important;
-  background: #1e293b !important;
-  border-radius: 8px !important;
-  margin: 1rem 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  z-index: 1 !important;
+    background: #2B2B2B !important; /* 统一背景 */
+    border-radius: 8px !important;
+    margin: 1rem 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
 }
 
-/* 2. 代码块主体：背景透明 */
 .code-container pre {
-  background: transparent !important;
-  padding: 1rem !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  position: relative !important;
+    background: transparent !important; /* 关键：去除内部 Pre 的背景，防止遮挡 */
+    padding: 1.2rem !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    color: #A9B7C6 !important; /* 默认文字颜色（浅灰白） */
+    font-family: 'JetBrains Mono', monospace !important;
 }
+
+/* 2. IDEA Darcula 风格完整配色 */
+
+/* 重置所有代码样式 - 最高优先级 */
+.code-container pre code *,
+.code-container pre code {
+    color: #A9B7C6 !important; /* 默认文本颜色 */
+    font-weight: normal !important;
+    font-style: normal !important;
+}
+
+/* 变量、参数 - 纯白色 */
+.code-container .hljs-variable,
+.code-container .hljs-params,
+.code-container .hljs-name,
+.code-container .hljs-selector-attr,
+.code-container .hljs-selector-pseudo,
+.code-container .hljs-doctype {
+    color: #FFFFFF !important; /* 纯白色 */
+    font-weight: 500 !important;
+}
+
+/* 类名、方法名、类型 - 亮黄色 */
+.code-container .hljs-title,
+.code-container .hljs-class,
+.code-container .hljs-type,
+.code-container .hljs-function,
+.code-container .hljs-built_in,
+.code-container .hljs-section,
+.code-container .hljs-selector-class {
+    color: #FFC66D !important; /* IDEA 亮黄色 */
+    font-weight: bold !important;
+}
+
+/* 关键字 - 橙色 */
+.code-container .hljs-keyword,
+.code-container .hljs-selector-tag,
+.code-container .hljs-subst,
+.code-container .hljs-request,
+.code-container .hljs-status {
+    color: #CC7832 !important; /* 橙色 */
+    font-weight: bold !important;
+}
+
+/* 字符串 - 绿色 */
+.code-container .hljs-string,
+.code-container .hljs-literal,
+.code-container .hljs-code,
+.code-container .hljs-value {
+    color: #6A8759 !important; /* 绿色 */
+}
+
+/* 注释 - 灰色斜体 */
+.code-container .hljs-comment,
+.code-container .hljs-doctag,
+.code-container .hljs-quote,
+.code-container .hljs-template-comment {
+    color: #808080 !important;
+    font-style: italic !important;
+}
+
+/* 数字 - 蓝色 */
+.code-container .hljs-number,
+.code-container .hljs-literal {
+    color: #6897BB !important; /* 蓝色 */
+}
+
+/* 注解/元数据 - 黄绿色 */
+.code-container .hljs-meta,
+.code-container .hljs-meta-string,
+.code-container .hljs-annotation,
+.code-container .hljs-meta-keyword {
+    color: #BBB529 !important;
+}
+
+/* 标签 - 橙色 */
+.code-container .hljs-tag,
+.code-container .hljs-name {
+    color: #CC7832 !important;
+}
+
+/* 属性名 - 紫色 */
+.code-container .hljs-attribute {
+    color: #D0D0FF !important;
+}
+
+/* 预处理指令 */
+.code-container .hljs-meta-preprocessor,
+.code-container .hljs-pragma {
+    color: #CC7832 !important;
+}
+
+/* 正则表达式 */
+.code-container .hljs-regexp {
+    color: #6A8759 !important;
+}
+
+/* 名称空间 */
+.code-container .hljs-namespace {
+    color: #E0E0E0 !important;
+}
+
+/* YAML 特定样式 - 按照 IDEA YAML 显示样式 */
+/* YAML 文档开始标记 (---) */
+.code-container .hljs-meta {
+    color: #CC7832 !important;
+    font-weight: bold !important;
+}
+
+/* YAML 键名 (属性) - 黄色，最高优先级 */
+/* 使用更具体的选择器确保优先级 */
+.code-container pre code .hljs-attr,
+.prose-container :deep(.hljs-attr) {
+    color: #FFC66D !important; /* 黄色 */
+    font-weight: 500 !important;
+}
+
+/* YAML 字符串值 */
+.code-container .hljs-string {
+    color: #6A8759 !important; /* 绿色 */
+}
+
+/* YAML 数字值 */
+.code-container .hljs-number {
+    color: #6897BB !important; /* 蓝色 */
+}
+
+/* YAML 布尔值 (true/false) */
+.code-container .hljs-literal {
+    color: #CC7832 !important; /* 橙色 */
+    font-weight: bold !important;
+}
+
+/* YAML 注释 */
+.code-container .hljs-comment {
+    color: #808080 !important;
+    font-style: italic !important;
+}
+
+/* 强制所有 span 元素继承颜色，但保留语法高亮 */
+.code-container pre code span {
+    color: inherit !important;
+}
+
+/* 确保代码块内语法高亮正确显示 */
+.code-container pre code .hljs-keyword { color: #CC7832 !important; font-weight: bold !important; }
+.code-container pre code .hljs-string { color: #6A8759 !important; }
+.code-container pre code .hljs-number { color: #6897BB !important; }
+.code-container pre code .hljs-comment { color: #808080 !important; font-style: italic !important; }
+.code-container pre code .hljs-title,
+.code-container pre code .hljs-class,
+.code-container pre code .hljs-function { color: #FFC66D !important; font-weight: bold !important; }
+.code-container pre code .hljs-attr { color: #FFC66D !important; font-weight: 500 !important; }
+.code-container pre code .hljs-variable,
+.code-container pre code .hljs-params,
+.code-container pre code .hljs-name { color: #FFFFFF !important; font-weight: 500 !important; }
+
+/* 确保 prose-container 的语法高亮优先级高于 code-container */
+.prose-container :deep(.hljs-keyword) { color: #CC7832 !important; font-weight: bold !important; }
+.prose-container :deep(.hljs-string) { color: #6A8759 !important; }
+.prose-container :deep(.hljs-number) { color: #6897BB !important; }
+.prose-container :deep(.hljs-comment) { color: #808080 !important; font-style: italic !important; }
+.prose-container :deep(.hljs-title),
+.prose-container :deep(.hljs-class),
+.prose-container :deep(.hljs-function) { color: #FFC66D !important; font-weight: bold !important; }
+.prose-container :deep(.hljs-attr) { color: #FFC66D !important; font-weight: 500 !important; }
+.prose-container :deep(.hljs-variable),
+.prose-container :deep(.hljs-params),
+.prose-container :deep(.hljs-name) { color: #FFFFFF !important; font-weight: 500 !important; }
 
 /* 3. [核心修复] 语言标签：强制物理靠右 */
 .lang-badge {

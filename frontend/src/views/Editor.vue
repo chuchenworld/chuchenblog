@@ -149,8 +149,18 @@ onMounted(async () => {
   await fetchCategories()
   await fetchTags()
 
-  vditor.value = new Vditor(editorRef.value, {
-    mode: 'ir',
+  // 确保 editorRef 已经挂载
+  if (!editorRef.value) {
+    console.error('【Vditor】editorRef 未初始化')
+    return
+  }
+
+  console.log('【Vditor】开始初始化，容器:', editorRef.value)
+
+  try {
+    console.log('【Vditor】开始初始化')
+    vditor.value = new Vditor(editorRef.value, {
+      mode: 'ir',
     height: 'calc(100vh - 280px)',
     cache: { enable: false },
     toolbarConfig: { 
@@ -181,134 +191,39 @@ onMounted(async () => {
       { name: 'preview', tip: '预览' },
       { name: 'export', tip: '导出' }
     ],
-    // 【核心修复】直接使用 Vditor 内置的上传配置，不要自己手写 render
-    upload: {
-      url: '/api/admin/upload', // 你的上传接口
-      fieldName: 'file', // 根据后端调整
-      paste: false, // 禁用 Vditor 自带的粘贴上传，交由自定义的 handlePaste 处理
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+    // 禁用 Vditor 的上传功能，使用自定义处理
+    upload: false,
+    // 禁用所有预览功能，防止 base64 显示
+    preview: {
+      markdown: {
+        toc: false,
       },
-      // 【关键】转换后端返回的数据格式为 Vditor 标准格式
-      // Vditor 默认期望格式: { "msg": "", "code": 0, "data": { "errFiles": [], "succMap": {} } }
-      format: (files) => {
-        console.log('【上传】待上传文件:', files);
-        return files;
-      },
-      // 【关键】处理服务器响应，转换为 Vditor 能识别的格式
-      // 假设后端返回: { "code": 200, "data": "https://url/to/image.png" }
-      response: (text, name) => {
-        console.log('【上传】服务器响应:', text);
-        
-        // 容错处理：空响应
-        if (!text || text.trim() === '') {
-          console.error('【上传】服务器返回空响应');
-          return { errFiles: ['服务器返回空响应'], succMap: {} };
-        }
-        
-        let res;
-        try {
-          res = JSON.parse(text);
-        } catch (e) {
-          console.error('【上传】JSON 解析失败:', e);
-          return { errFiles: ['服务器返回格式错误'], succMap: {} };
-        }
-        
-        // 容错处理：空数据
-        if (!res || typeof res !== 'object') {
-          console.error('【上传】响应数据为空或不是对象');
-          return { errFiles: ['响应数据格式错误'], succMap: {} };
-        }
-        
-        // 检查是否成功
-        // 支持多种成功码：200, "200", 0, "0", "success"
-        const successCodes = [200, '200', 0, '0', 'success', 'SUCCESS'];
-        const isSuccess = successCodes.includes(res.code) || res.success;
-        
-        if (isSuccess && res.data) {
-          // 如果 data 是字符串（直接返回 URL）
-          if (typeof res.data === 'string') {
-            return { errFiles: [], succMap: { [name]: res.data } };
-          }
-          // 如果 data 是对象（包含 succMap）
-          if (typeof res.data === 'object' && res.data.succMap) {
-            return { 
-              errFiles: res.data.errFiles || [], 
-              succMap: res.data.succMap 
-            };
-          }
-          // 其他情况
-          console.error('【上传】data 字段格式不支持:', res.data);
-          return { errFiles: ['返回数据格式不支持'], succMap: {} };
-        } else {
-          const errorMsg = res.message || res.msg || '上传失败';
-          console.error('【上传】失败:', errorMsg);
-          return { errFiles: [errorMsg], succMap: {} };
-        }
-      }
+      mode: 'editor',  // 只显示编辑器，不显示预览
+      actions: [],
+    },
+    // 禁用图片相关功能
+    image: {
+      lazyLoad: false,
+      isPreview: false,
+      preview: false,
+    },
+    // 禁用链接预览
+    link: {
+      isPreview: false,
+    },
+    // 禁用 HTML 预览
+    html: {
+      preview: false,
     },
     after: () => {
-      console.log('Vditor 初始化完成')
-      bindEditorEvents()
-      
-      // 为工具栏按钮添加悬浮提示
-      setTimeout(() => {
-        const toolbarButtons = document.querySelectorAll('.vditor-toolbar button')
-        toolbarButtons.forEach(btn => {
-          const icon = btn.querySelector('use')
-          if (icon) {
-            const href = icon.getAttribute('xlink:href') || icon.getAttribute('href')
-            if (href && href.includes('emoji')) {
-              btn.setAttribute('title', 'emoji')
-            } else if (href && href.includes('heading')) {
-              btn.setAttribute('title', '标题')
-            } else if (href && href.includes('bold')) {
-              btn.setAttribute('title', '粗体')
-            } else if (href && href.includes('italic')) {
-              btn.setAttribute('title', '斜体')
-            } else if (href && href.includes('strike')) {
-              btn.setAttribute('title', '删除线')
-            } else if (href && href.includes('link')) {
-              btn.setAttribute('title', '链接')
-            } else if (href && href.includes('list')) {
-              btn.setAttribute('title', '无序列表')
-            } else if (href && href.includes('ordered')) {
-              btn.setAttribute('title', '有序列表')
-            } else if (href && href.includes('check')) {
-              btn.setAttribute('title', '任务列表')
-            } else if (href && href.includes('outdent')) {
-              btn.setAttribute('title', '减少缩进')
-            } else if (href && href.includes('indent')) {
-              btn.setAttribute('title', '增加缩进')
-            } else if (href && href.includes('quote')) {
-              btn.setAttribute('title', '引用')
-            } else if (href && href.includes('line')) {
-              btn.setAttribute('title', '分割线')
-            } else if (href && href.includes('code')) {
-              btn.setAttribute('title', '代码块')
-            } else if (href && href.includes('inline-code')) {
-              btn.setAttribute('title', '行内代码')
-            } else if (href && href.includes('table')) {
-              btn.setAttribute('title', '表格')
-            } else if (href && href.includes('upload')) {
-              btn.setAttribute('title', '上传')
-            } else if (href && href.includes('record')) {
-              btn.setAttribute('title', '录音')
-            } else if (href && href.includes('edit-mode')) {
-              btn.setAttribute('title', '编辑模式')
-            } else if (href && href.includes('both')) {
-              btn.setAttribute('title', '分屏模式')
-            } else if (href && href.includes('fullscreen')) {
-              btn.setAttribute('title', '全屏')
-            } else if (href && href.includes('preview')) {
-              btn.setAttribute('title', '预览')
-            } else if (href && href.includes('export')) {
-              btn.setAttribute('title', '导出')
-            }
-          }
-        })
-      }, 100)
-      
+      console.log('【Vditor】初始化完成')
+
+      // 绑定自定义粘贴和拖拽处理
+      bindCustomPasteHandler()
+
+      // 移除 Vditor 的图片点击处理器，防止显示 base64
+      removeVditorImageHandlers()
+
       const id = route.query.id
       if (id) {
         isEdit.value = true
@@ -317,93 +232,329 @@ onMounted(async () => {
       }
     }
   })
+} catch (error) {
+  console.error('【Vditor】初始化失败:', error)
+  alert('编辑器初始化失败: ' + error.message)
+}
 })
 
-// 修复后的事件绑定函数
-function bindEditorEvents() {
+// 自定义粘贴处理函数
+function bindCustomPasteHandler() {
   if (!vditor.value) {
-    console.warn('Vditor 实例不存在，无法绑定事件')
+    console.warn('Vditor 实例不存在')
     return
   }
 
-  // 延长延迟至 500ms，确保 Vditor 内部完全初始化
-  setTimeout(() => {
-    if (!vditor.value) {
-      console.warn('Vditor 实例已销毁')
-      return
-    }
+  // 获取 Vditor 的编辑区域
+  const editableDiv = editorRef.value.querySelector('.vditor-ir') || editorRef.value.querySelector('[contenteditable="true"]')
+  if (!editableDiv) {
+    console.error('【粘贴】未找到编辑区域')
+    return
+  }
 
-    const editableDiv = editorRef.value.querySelector('.vditor-ir') || editorRef.value.querySelector('[contenteditable="true"]')
-    if (editableDiv) {
-      console.log('【编辑器事件】找到内部编辑区域，绑定粘贴事件:', editableDiv)
-      editableDiv.addEventListener('paste', handlePaste)
-      editableDiv.addEventListener('dragover', handleDragOver)
-      editableDiv.addEventListener('drop', handleDrop)
-    } else {
-      console.error('【编辑器事件】未找到内部可编辑区域')
-      // 如果还是找不到，递归重试（最多3次）
-      let retryCount = 0;
-      const retryInterval = setInterval(() => {
-        const el = editorRef.value.querySelector('.vditor-ir');
-        if (el || retryCount > 3) {
-          clearInterval(retryInterval);
-          if (el) bindEditorEvents(); // 重新绑定
-        }
-        retryCount++;
-      }, 200);
-    }
-  }, 500) // 修改此处为 500
-}
+  console.log('【粘贴】绑定自定义粘贴处理')
 
-// 修复后的粘贴处理函数（增加了 try-catch）
-function handlePaste(event) {
-  try {
-    const clipboardData = event.clipboardData || window.clipboardData;
-    if (!clipboardData) return;
+  // 监听粘贴事件 - 更彻底地阻止 Vditor 的默认行为
+  editableDiv.addEventListener('paste', async (event) => {
+    // 阻止 Vditor 的默认粘贴处理
+    event.stopImmediatePropagation()
+    event.preventDefault()
 
-    const items = clipboardData.items;
+    const clipboardData = event.clipboardData || window.clipboardData
+    if (!clipboardData) return
+
+    const items = clipboardData.items
     for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+      const item = items[i]
       if (item.type.indexOf('image') !== -1) {
-        const file = item.getAsFile();
+        const file = item.getAsFile()
         if (file) {
-          console.log('【粘贴】检测到图片:', file.name);
-          event.preventDefault();
-          
-          // 【关键修复】增加对 tip 对象的检查
-          if (vditor.value && vditor.value.vditor && vditor.value.vditor.tip) {
-            vditor.value.vditor.tip.paste(file);
-          } else {
-            console.error('Vditor tip 对象未初始化，请检查 Vditor 是否加载完成');
-            alert('编辑器正在初始化，请稍后再试粘贴');
+          console.log('【粘贴】检测到图片:', file.name)
+
+          // 上传图片
+          try {
+            const url = await uploadImage(file)
+            console.log('【粘贴】上传成功:', url)
+
+            // 在光标位置插入图片 - 使用正确的 Vditor API
+            if (vditor.value && typeof vditor.value.insertValue === 'function') {
+              console.log('【粘贴】使用 vditor.value.insertValue')
+              vditor.value.insertValue(`![${file.name}](${url})`)
+            }
+          } catch (error) {
+            console.error('【粘贴】上传失败:', error)
+            alert('图片上传失败: ' + error.message)
           }
-          return;
+          return
         }
       }
     }
-  } catch (error) {
-    console.error('【粘贴功能】发生致命错误:', error);
-    alert('图片粘贴失败：' + error.message);
+
+    // 如果是文本粘贴，允许正常处理
+    console.log('【粘贴】文本粘贴，允许处理')
+  }, true)  // 捕获阶段，优先于 Vditor
+
+  // 监听拖拽事件
+  editableDiv.addEventListener('dragover', (event) => {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+  })
+
+  editableDiv.addEventListener('drop', async (event) => {
+    event.preventDefault()
+    const files = event.dataTransfer?.files
+    if (!files) return
+
+    for (const file of files) {
+      if (file.type.startsWith('image/')) {
+        console.log('【拖拽】检测到图片:', file.name)
+
+        try {
+          const url = await uploadImage(file)
+          console.log('【拖拽】上传成功:', url)
+          console.log('【拖拽】Vditor 实例:', vditor.value)
+          console.log('【拖拽】insertValue 方法:', typeof vditor.value?.insertValue)
+          console.log('【拖拽】vditor.vditor.insertValue 方法:', typeof vditor.value?.vditor?.insertValue)
+
+          // 在光标位置插入图片 - 使用正确的 Vditor API
+          if (vditor.value) {
+            // vditor.value 就是 Vditor 实例，直接调用 insertValue
+            if (typeof vditor.value.insertValue === 'function') {
+              console.log('【拖拽】使用 vditor.value.insertValue')
+              vditor.value.insertValue(`![${file.name}](${url})`)
+            } else {
+              console.error('【拖拽】无法找到 insertValue 方法')
+              console.error('【拖拽】Vditor 实例:', vditor.value)
+              console.error('【拖拽】Vditor 对象结构:', Object.keys(vditor.value))
+              alert('插入图片失败：编辑器 API 不可用')
+            }
+          }
+        } catch (error) {
+          console.error('【拖拽】上传失败:', error)
+          alert('图片上传失败: ' + error.message)
+        }
+      }
+    }
+  })
+
+  // 监听图片点击事件，只阻止 base64 弹窗，不阻止图片本身
+  editableDiv.addEventListener('click', (event) => {
+    const target = event.target
+
+    // 如果点击的是图片，允许正常行为，但阻止可能的 base64 弹窗
+    if (target.tagName === 'IMG') {
+      console.log('【图片点击】图片正常点击，允许显示')
+      // 不阻止默认行为，让图片正常显示
+      // 但阻止事件冒泡，防止触发 Vditor 的 base64 处理
+      event.stopPropagation()
+      return true
+    }
+
+    // 如果点击的是包含 base64 文本的元素（不是图片），阻止显示
+    const text = target.textContent || target.innerText || ''
+    if (text.includes('base64') && target.tagName !== 'IMG') {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      console.log('【点击】阻止 base64 文本显示')
+      return false
+    }
+  }, true)  // true 表示在捕获阶段处理，优先于 Vditor
+
+  // 也监听整个文档的点击事件，防止事件冒泡到 Vditor
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    if (target.tagName === 'IMG' && target.closest('.vditor-ir')) {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      console.log('【文档点击】阻止 base64 显示')
+      return false
+    }
+  }, true)
+
+  // 全局拦截：只拦截 base64 弹窗，不拦截图片点击
+  document.addEventListener('click', (event) => {
+    const target = event.target
+
+    // 检查是否点击了 base64 弹窗（不是图片本身）
+    if (target.classList && (
+      target.classList.contains('vditor-tip') ||
+      target.classList.contains('vditor-panel')
+    )) {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      console.log('【全局拦截】阻止 base64 弹窗显示')
+      return false
+    }
+
+    // 检查是否点击了包含 base64 文本的元素（不是图片）
+    const text = target.textContent || target.innerText || ''
+    if (text.includes('base64') && target.tagName !== 'IMG') {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      console.log('【全局拦截】阻止 base64 文本显示')
+      return false
+    }
+  }, true)  // 捕获阶段，优先于其他事件
+
+  // 监听键盘事件（删除操作）- 允许删除，但监控 base64 显示
+  document.addEventListener('keydown', (event) => {
+    // 检查是否是删除键（Delete、Backspace）
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+      console.log('【键盘】检测到删除操作，允许正常删除')
+      // 不阻止删除操作，让删除正常进行
+      // 但会在删除后通过 MutationObserver 移除可能的 base64 弹窗
+    }
+  }, true)
+
+  // 在文档级别拦截粘贴事件，防止 Vditor 处理
+  document.addEventListener('paste', async (event) => {
+    // 检查是否在编辑器内粘贴
+    const activeElement = document.activeElement
+    if (activeElement && activeElement.closest('.vditor-ir')) {
+      console.log('【文档粘贴】在编辑器内粘贴，阻止 Vditor 处理')
+      event.stopImmediatePropagation()
+      event.preventDefault()
+
+      const clipboardData = event.clipboardData || window.clipboardData
+      if (!clipboardData) return
+
+      const items = clipboardData.items
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        if (item.type.indexOf('image') !== -1) {
+          const file = item.getAsFile()
+          if (file) {
+            console.log('【文档粘贴】检测到图片:', file.name)
+
+            // 上传图片
+            try {
+              const url = await uploadImage(file)
+              console.log('【文档粘贴】上传成功:', url)
+
+              // 在光标位置插入图片
+              if (vditor.value && typeof vditor.value.insertValue === 'function') {
+                vditor.value.insertValue(`![${file.name}](${url})`)
+              }
+            } catch (error) {
+              console.error('【文档粘贴】上传失败:', error)
+              alert('图片上传失败: ' + error.message)
+            }
+            return
+          }
+        }
+      }
+    }
+  }, true)  // 捕获阶段，优先于 Vditor
+}
+
+// 移除 Vditor 的图片点击处理器
+function removeVditorImageHandlers() {
+  // 使用 MutationObserver 监控 DOM 变化，阻止 base64 显示
+  if (!editorRef.value) return
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      // 检查是否添加了 base64 弹窗
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) { // 元素节点
+          // 移除所有 Vditor 弹窗（包括 base64 显示）
+          if (node.classList && (
+            node.classList.contains('vditor-tip') ||
+            node.classList.contains('vditor-panel') ||
+            node.classList.contains('vditor-image__drag') ||
+            node.classList.contains('vditor-image__resize')
+          )) {
+            console.log('【监控】检测到 Vditor 弹窗，移除元素')
+            node.remove()
+            return
+          }
+
+          // 检查是否包含 base64 文本的元素（不是图片本身）
+          const text = node.textContent || node.innerText || ''
+          if (text.includes('base64') && node.tagName !== 'IMG') {
+            console.log('【监控】检测到 base64 文本，移除元素')
+            node.remove()
+            return
+          }
+
+          // 检查子元素是否包含 base64
+          if (node.querySelectorAll) {
+            const base64Elements = node.querySelectorAll('*')
+            base64Elements.forEach(el => {
+              const elText = el.textContent || el.innerText || ''
+              if (elText.includes('base64') && el.tagName !== 'IMG') {
+                console.log('【监控】子元素包含 base64，移除')
+                el.remove()
+              }
+            })
+          }
+        }
+      })
+
+      // 也检查属性变化（Vditor 可能通过修改属性显示 base64）
+      if (mutation.type === 'attributes' && mutation.target) {
+        const target = mutation.target
+        if (target.classList && (
+          target.classList.contains('vditor-tip') ||
+          target.classList.contains('vditor-panel')
+        )) {
+          console.log('【监控】检测到 Vditor 弹窗属性变化，移除元素')
+          target.remove()
+        }
+      }
+    })
+  })
+
+  // 监控编辑器区域的变化
+  const editableDiv = editorRef.value.querySelector('.vditor-ir') || editorRef.value.querySelector('[contenteditable="true"]')
+  if (editableDiv) {
+    observer.observe(editableDiv, {
+      childList: true,
+      subtree: true
+    })
+    console.log('【监控】MutationObserver 已启动')
   }
 }
 
-// 拖拽事件处理
-function handleDragOver(event) {
-  event.preventDefault()
-  event.dataTransfer.dropEffect = 'copy'
-}
+// 上传图片函数
+async function uploadImage(file) {
+  const formData = new FormData()
+  formData.append('file', file)
 
-// 放置事件处理 - 支持拖拽上传
-function handleDrop(event) {
-  event.preventDefault()
-  const files = event.dataTransfer?.files
-  if (!files) return
+  const response = await fetch('/api/admin/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+    },
+    body: formData
+  })
 
-  for (const file of files) {
-    if (file.type.startsWith('image/')) {
-      // 使用 Vditor 内置的粘贴处理器来处理拖拽文件
-      vditor.value.vditor.tip.paste(file)
+  const text = await response.text()
+  console.log('【上传】服务器响应:', text)
+
+  try {
+    const res = JSON.parse(text)
+
+    // 检查是否是 Vditor 标准格式
+    if (res && res.succMap) {
+      // 返回第一个图片的 URL
+      const keys = Object.keys(res.succMap)
+      if (keys.length > 0) {
+        return res.succMap[keys[0]]
+      }
     }
+
+    // 兼容旧格式: { code: 200, message: "success", data: "url" }
+    if (res && res.code === 200 && res.data) {
+      return res.data
+    }
+
+    // 其他情况
+    const errorMsg = res.message || '上传失败'
+    throw new Error(errorMsg)
+  } catch (e) {
+    console.error('【上传】JSON 解析失败:', e)
+    throw new Error('服务器返回格式错误')
   }
 }
 
@@ -487,6 +638,27 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+/* 隐藏 base64 相关的弹窗和提示，但不影响正常编辑 */
+:deep(.vditor-tip),
+:deep(.vditor-panel) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* 确保图片可以正常显示、点击和删除 */
+:deep(.vditor-ir img) {
+  pointer-events: auto !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 允许图片被选中和删除 */
+:deep(.vditor-ir img selected) {
+  outline: 2px solid #409eff !important;
+}
+
 .editor-container {
   min-height: 100vh;
   background-color: #f8f9fa;
@@ -820,6 +992,61 @@ async function handleSubmit() {
   /* 如果图片周围有奇怪的边框或阴影，可以在这里重置 */
   outline: none;
   box-shadow: none;
+  display: inline-block;
+}
+
+/* 图片调整大小的手柄 */
+:deep(.vditor-ir__node--selected) {
+  position: relative;
+}
+
+:deep(.vditor-ir__node--selected::after) {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: #409eff;
+  cursor: nwse-resize;
+  border-radius: 2px;
+}
+
+/* 图片选中时的边框 */
+:deep(.vditor-ir__node--active) {
+  outline: 2px solid #409eff !important;
+  outline-offset: 2px;
+}
+
+/* 确保图片可以拖拽调整大小 */
+:deep(.vditor-ir img) {
+  resize: both;
+  overflow: auto;
+  min-width: 50px;
+  min-height: 50px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+/* 图片悬停时显示调整边框 */
+:deep(.vditor-ir img:hover) {
+  border-color: #409eff;
+}
+
+/* 图片调整大小时的视觉反馈 */
+:deep(.vditor-ir img:active) {
+  border-color: #66b1ff;
+}
+
+/* 确保粘贴的图片正确显示 */
+:deep(.vditor-ir p img) {
+  display: inline-block;
+  margin: 8px 0;
+}
+
+/* 图片工具栏提示 */
+:deep(.vditor-image__img) {
+  cursor: nwse-resize;
 }
 
 /* 修复 Vditor 选中图片时的样式 */

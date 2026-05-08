@@ -30,7 +30,13 @@ request.interceptors.response.use(
   response => {
     console.log('【响应拦截器】收到响应:', response.config.method.toUpperCase(), response.config.url, '状态码:', response.status)
     const res = response.data
-    
+
+    // 【关键修复】如果是上传接口，直接返回原始数据，不进行包装
+    if (response.config.url.includes('/upload')) {
+      console.log('【响应拦截器】上传接口，直接返回原始数据')
+      return res
+    }
+
     // 如果响应是数组或不包含 code 字段，直接返回数据（可能是后端直接返回的列表）
     if (Array.isArray(res) || !res.code) {
       console.log('【响应拦截器】请求成功（直接数据）')
