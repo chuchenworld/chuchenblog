@@ -57,14 +57,15 @@
           <!-- 博主信息 -->
           <div class="drawer-header">
             <div class="avatar-wrapper">
-              <img 
-                :src="authStore.avatar || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20blogger%20avatar%20portrait%2C%20friendly%2C%20minimalist&image_size=square'" 
-                alt="博主头像" 
+              <img
+                :src="adminProfile.avatar || defaultAvatar"
+                alt="博主头像"
                 class="drawer-avatar"
+                @error="handleAvatarError"
               />
             </div>
-            <h3 class="drawer-nickname">{{ authStore.nickname || '初尘' }}</h3>
-            <p class="drawer-bio">热爱技术，分享生活</p>
+            <h3 class="drawer-nickname">{{ adminProfile.nickname || '初尘' }}</h3>
+            <p class="drawer-bio">{{ adminProfile.bio || '热爱技术，分享生活' }}</p>
           </div>
           
           <!-- 菜单列表 -->
@@ -146,6 +147,32 @@ const showCategoryMenu = ref(false)
 const showMobileMenu = ref(false)
 const showMobileCategory = ref(false)
 const showMobileUser = ref(false)
+
+// 博主信息（与PC端一致）
+const adminProfile = ref({
+  nickname: '',
+  avatar: '',
+  bio: '',
+  tags: ''
+})
+const defaultAvatar = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=profile%20picture%20of%20a%20young%20blogger%20with%20glasses%2C%20friendly%20smile%2C%20professional%20looking&image_size=square'
+
+// 获取博主信息
+async function fetchAdminProfile() {
+  try {
+    const response = await request.get('/config/admin/profile')
+    if (response.data) {
+      adminProfile.value = { ...adminProfile.value, ...response.data }
+    }
+  } catch (error) {
+    console.error('获取博主信息失败:', error)
+  }
+}
+
+// 头像加载失败处理
+function handleAvatarError(event) {
+  event.target.src = defaultAvatar
+}
 
 async function fetchCategories() {
   try {
@@ -229,6 +256,7 @@ function handleMobileLogout() {
 
 onMounted(() => {
   fetchCategories()
+  fetchAdminProfile()
 })
 </script>
 
@@ -285,7 +313,7 @@ onMounted(() => {
 }
 
 .main-content {
-  min-width: 1200px;
+  min-width: auto;
   min-height: 100vh;
   padding: 120px 0 60px;
   background-color: transparent !important;

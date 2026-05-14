@@ -35,7 +35,8 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- 桌面端表格视图 -->
+      <div class="overflow-x-auto hidden lg:block">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
@@ -84,6 +85,46 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div class="lg:hidden space-y-3">
+        <div
+          v-for="post in postStore.posts"
+          :key="post.id"
+          class="bg-white rounded-lg shadow p-3 border border-gray-200"
+        >
+          <!-- 标题行 -->
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-medium text-gray-900 text-sm flex-1 mr-2 line-clamp-2">{{ post.title }}</h3>
+            <span :class="['px-2 py-0.5 text-xs rounded-full flex-shrink-0', post.status === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800']">
+              {{ post.status === 1 ? '已发布' : '草稿' }}
+            </span>
+          </div>
+
+          <!-- 信息行 -->
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mb-2">
+            <span>ID: {{ post.id }}</span>
+            <span>{{ formatDate(post.createTime) }}</span>
+            <span v-if="getCategoryName(post.categoryId)" class="text-blue-600">
+              {{ getCategoryName(post.categoryId) }}
+            </span>
+            <span class="ml-auto">阅读: {{ post.viewCount || 0 }}</span>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex gap-2 pt-2 border-t border-gray-100">
+            <el-button type="primary" size="mini" @click="handleEditPost(post)">
+              编辑
+            </el-button>
+            <el-button type="warning" size="mini" @click="handleManageComments(post)">
+              评论
+            </el-button>
+            <el-button type="danger" size="mini" @click="handleDeletePost(post)">
+              删除
+            </el-button>
+          </div>
+        </div>
       </div>
 
       <div class="p-6 border-t border-gray-200 flex items-center justify-between">
@@ -307,3 +348,56 @@ onMounted(() => {
   fetchCategories()
 })
 </script>
+
+<style scoped>
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .w-64 {
+    width: 100%;
+  }
+
+  .w-32 {
+    width: 100%;
+  }
+
+  /* 移动端卡片视图优化 */
+  .lg\\:hidden.space-y-3 > div {
+    padding: 12px;
+  }
+
+  .lg\\:hidden .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .space-y-6 > div:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* 小屏幕按钮优化 */
+  .lg\\:hidden .flex.gap-2 {
+    gap: 6px;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+}
+</style>

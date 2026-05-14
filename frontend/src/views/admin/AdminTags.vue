@@ -9,7 +9,8 @@
     </div>
 
     <div class="bg-white rounded-lg shadow">
-      <div class="overflow-x-auto">
+      <!-- 桌面端表格视图 -->
+      <div class="hidden lg:block overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
@@ -46,6 +47,48 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-if="tags.length > 0" class="lg:hidden space-y-3 p-4">
+        <div
+          v-for="tag in tags"
+          :key="tag.id"
+          class="bg-white rounded-lg shadow p-3 border border-gray-200"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center" :style="{ backgroundColor: tag.color }">
+                <span class="text-white text-xs font-medium">{{ tag.name.charAt(0).toUpperCase() }}</span>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900 text-sm">{{ tag.name }}</div>
+                <div class="text-xs text-gray-500">ID: {{ tag.id }}</div>
+              </div>
+            </div>
+            <el-tag :color="tag.color" effect="dark" size="small">
+              {{ tag.articleCount || 0 }} 篇
+            </el-tag>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+            <span class="inline-flex items-center gap-1">
+              <span class="w-3 h-3 rounded" :style="{ backgroundColor: tag.color }"></span>
+              {{ tag.color }}
+            </span>
+          </div>
+
+          <div class="flex gap-2 pt-2 border-t border-gray-100">
+            <el-button type="primary" size="mini" @click="handleEditTag(tag)">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
+            <el-button type="danger" size="mini" @click="handleDeleteTag(tag)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
+          </div>
+        </div>
       </div>
 
       <div v-if="tags.length === 0" class="p-6 text-center text-gray-500">
@@ -173,3 +216,24 @@ onMounted(() => {
   fetchTags()
 })
 </script>
+
+<style scoped>
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .lg\:hidden .el-button--mini {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lg\:hidden .flex.gap-2 {
+    gap: 6px;
+  }
+
+  .lg\:hidden .el-button--mini {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+}
+</style>

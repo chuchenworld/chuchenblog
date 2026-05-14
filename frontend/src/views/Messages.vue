@@ -174,4 +174,21 @@ onMounted(() => {
 .content-wrapper {
   background: transparent;
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 15px;
+  }
+
+  .max-w-6xl {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding: 10px;
+  }
+}
 </style>

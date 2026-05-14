@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 body, #app {
-  min-width: 1200px;
-  overflow-x: auto;
+  min-width: auto;
+  overflow-x: hidden;
 }

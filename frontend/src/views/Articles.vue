@@ -891,11 +891,8 @@ onMounted(() => {
 @media (max-width: 768px) {
   .articles-page {
     padding: 12px;
-    background-image: url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20night%20sky%20with%20stars%20and%20galaxy%2C%20dark%20purple%20blue%20gradient%2C%20dreamy%20atmosphere%2C%20minimalist%20background&image_size=landscape_16_9');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    /* 移除移动端独立背景，使用 App.vue 的全局背景 */
+    background: transparent;
     min-height: 100vh;
   }
 

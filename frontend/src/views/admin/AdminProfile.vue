@@ -195,4 +195,27 @@ const removeTag = (index) => {
   background-color: #f5f7fa;
   border-radius: 4px;
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .flex.items-center.mb-6 {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .ml-6 {
+    margin-left: 0;
+    margin-top: 16px;
+  }
+
+  .el-form {
+    label-width: 80px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .el-form {
+    label-width: 70px !important;
+  }
+}
 </style>

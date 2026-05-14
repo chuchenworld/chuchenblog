@@ -49,18 +49,18 @@
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-2">{{ formatDate(photo.shootTime) || formatDate(photo.createTime) }}</p>
-            <div class="mt-4 flex space-x-2">
+            <div class="mt-4 flex flex-wrap gap-2">
               <el-button type="primary" size="small" @click="editPhoto(photo)">
                 <el-icon><Edit /></el-icon>
-                编辑
+                <span class="hidden sm:inline">编辑</span>
               </el-button>
               <el-button type="warning" size="small" @click="viewPhotoComments(photo)">
                 <el-icon><Message /></el-icon>
-                评论
+                <span class="hidden sm:inline">评论</span>
               </el-button>
               <el-button type="danger" size="small" @click="deletePhoto(photo.id)">
                 <el-icon><Delete /></el-icon>
-                删除
+                <span class="hidden sm:inline">删除</span>
               </el-button>
             </div>
           </div>
@@ -984,5 +984,33 @@ function getAvatarInitial(nickname) {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .mt-4.flex.flex-wrap.gap-2 {
+    gap: 6px;
+  }
+
+  .el-button--small {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .el-button--small {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 }
 </style>

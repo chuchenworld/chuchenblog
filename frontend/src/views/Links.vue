@@ -246,6 +246,82 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .links-page {
+    padding: 20px 15px;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+  }
+
+  .friend-card {
+    padding: 12px 15px;
+  }
+
+  .friend-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .friend-name {
+    font-size: 14px;
+  }
+
+  .friend-desc {
+    font-size: 12px;
+  }
+
+  .blogger-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+  }
+
+  .blogger-avatar {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+
+  .blogger-detail {
+    margin-left: 0;
+  }
+
+  .blogger-name {
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .apply-form {
+    padding: 0 10px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .links-page {
+    padding: 15px 10px;
+  }
+
+  .section-header {
+    margin-bottom: 15px;
+  }
+
+  .friend-card {
+    padding: 10px 12px;
+  }
+
+  .friend-info {
+    margin-left: 10px;
+  }
+
+  .apply-card {
+    border-radius: 8px;
+  }
+}
+
 /* 友人博客区域 */
 .friends-section {
   margin-bottom: 30px;

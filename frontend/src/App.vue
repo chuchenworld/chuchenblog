@@ -4,20 +4,29 @@
     <div class="global-background">
       <!-- 移动端使用静态图片 -->
       <img
-        v-if="isMobile || !bgUrl || !isVideo(bgUrl)"
-        :src="isMobile ? mobileBgUrl : bgUrl"
+        v-if="isMobile"
+        :src="mobileBgUrl"
         class="bg-media"
         alt="背景"
+        @error="handleMobileBgError"
       />
-      <!-- 桌面端使用视频 -->
+      <!-- 桌面端：如果有视频URL则使用视频，否则使用图片 -->
       <video
-        v-else
+        v-else-if="bgUrl && isVideo(bgUrl)"
         :src="bgUrl"
         class="bg-media"
         autoplay
         muted
         loop
         playsinline
+        @error="handleVideoError"
+      />
+      <img
+        v-else
+        :src="bgUrl || mobileBgUrl"
+        class="bg-media"
+        alt="背景"
+        @error="handleDesktopBgError"
       />
       <div class="background-overlay"></div>
     </div>
@@ -27,10 +36,14 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import mobileBackground from '@/assets/【哲风壁纸】植物-清新-窗帘.png'
 
 const bgUrl = ref('')
 const isMobile = ref(false)
-const mobileBgUrl = 'https://chuchenblog.oss-cn-beijing.aliyuncs.com/uploads/2026/04/27/assets/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BE%A0%E5%AE%A2-%E5%89%91%E6%9D%A5-%E5%8F%A4%E9%A3%8E.png'
+// 移动端背景图片 - 使用本地图片
+const mobileBgUrl = mobileBackground
+// 备用背景图片
+const fallbackBgUrl = 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80'
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
@@ -38,6 +51,22 @@ const checkMobile = () => {
 
 const isVideo = (url) => {
   return url && url.toLowerCase().endsWith('.mp4')
+}
+
+const handleMobileBgError = (event) => {
+  console.log('移动端背景图片加载失败，使用备用图片')
+  event.target.src = fallbackBgUrl
+}
+
+const handleDesktopBgError = (event) => {
+  console.log('桌面端背景图片加载失败，使用移动端背景')
+  event.target.src = mobileBgUrl
+}
+
+const handleVideoError = (event) => {
+  console.log('背景视频加载失败，切换到图片模式')
+  // 触发重新渲染，使用图片模式
+  bgUrl.value = ''
 }
 
 async function fetchHomeBackground() {

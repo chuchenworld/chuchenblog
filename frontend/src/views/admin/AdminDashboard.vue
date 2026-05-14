@@ -170,3 +170,49 @@ function formatDate(dateStr) {
   return `${year}-${month}-${day}`
 }
 </script>
+
+<style scoped>
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .grid-cols-1.lg\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .bg-white.rounded-lg.shadow.p-6 {
+    padding: 12px;
+  }
+
+  .text-2xl.font-bold {
+    font-size: 1.25rem;
+  }
+
+  .text-lg.font-semibold {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .bg-white.rounded-lg.shadow.p-6 {
+    padding: 10px;
+  }
+
+  .w-12.h-12 {
+    width: 36px;
+    height: 36px;
+  }
+
+  .text-xl {
+    font-size: 1rem;
+  }
+}
+</style>

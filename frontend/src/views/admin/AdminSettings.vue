@@ -248,4 +248,31 @@ onMounted(() => {
   font-family: 'Ma Shan Zheng', 'ZCOOL XiaoWei', 'STKaiti', 'KaiTi', serif;
   font-size: 16px;
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .el-form {
+    label-width: 80px !important;
+  }
+
+  .w-64 {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+
+  .el-upload__tip {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .el-form {
+    label-width: 70px !important;
+  }
+
+  .space-y-6 > div:first-child h1 {
+    font-size: 1.5rem;
+  }
+}
 </style>

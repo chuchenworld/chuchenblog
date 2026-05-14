@@ -66,79 +66,145 @@
 
     <!-- 表格 -->
     <div class="table-container">
-      <el-table :data="filteredLinks" border class="links-table">
-        <el-table-column prop="siteName" label="站点名称" min-width="120">
-          <template #default="scope">
-            <span>{{ scope.row.siteName }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="siteDescript" label="站点描述" min-width="150">
-          <template #default="scope">
-            <span class="truncate-text">{{ scope.row.siteDescript }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="siteUrl" label="站点链接" min-width="180">
-          <template #default="scope">
-            <a :href="scope.row.siteUrl" target="_blank" class="url-link">
-              {{ scope.row.siteUrl }}
-            </a>
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="scope">
-            <el-tag 
-              :type="getStatusType(scope.row.status)"
-              size="small"
+      <!-- 桌面端表格视图 -->
+      <div class="hidden lg:block">
+        <el-table :data="filteredLinks" border class="links-table">
+          <el-table-column prop="siteName" label="站点名称" min-width="120">
+            <template #default="scope">
+              <span>{{ scope.row.siteName }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="siteDescript" label="站点描述" min-width="150">
+            <template #default="scope">
+              <span class="truncate-text">{{ scope.row.siteDescript }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="siteUrl" label="站点链接" min-width="180">
+            <template #default="scope">
+              <a :href="scope.row.siteUrl" target="_blank" class="url-link">
+                {{ scope.row.siteUrl }}
+              </a>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" label="状态" width="100">
+            <template #default="scope">
+              <el-tag
+                :type="getStatusType(scope.row.status)"
+                size="small"
+              >
+                {{ getStatusText(scope.row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="申请时间" width="170">
+            <template #default="scope">
+              {{ formatDate(scope.row.createTime) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="220">
+            <template #default="scope">
+              <el-button
+                v-if="scope.row.status === 0"
+                type="success"
+                size="small"
+                @click="handleApprove(scope.row)"
+              >
+                <el-icon><Check /></el-icon>
+                通过
+              </el-button>
+              <el-button
+                v-if="scope.row.status === 1"
+                type="warning"
+                size="small"
+                @click="handleDisable(scope.row)"
+              >
+                <el-icon><Lock /></el-icon>
+                停用
+              </el-button>
+              <el-button
+                v-if="scope.row.status === 2"
+                type="primary"
+                size="small"
+                @click="handleEnable(scope.row)"
+              >
+                <el-icon><Unlock /></el-icon>
+                启用
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleReject(scope.row)"
+              >
+                <el-icon><Delete /></el-icon>
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div class="lg:hidden space-y-3">
+        <div
+          v-for="link in filteredLinks"
+          :key="link.id"
+          class="bg-white rounded-lg shadow p-3 border border-gray-200"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <div class="font-medium text-gray-900 text-sm">{{ link.siteName }}</div>
+            <el-tag
+              :type="getStatusType(link.status)"
+              size="mini"
             >
-              {{ getStatusText(scope.row.status) }}
+              {{ getStatusText(link.status) }}
             </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="申请时间" width="170">
-          <template #default="scope">
-            {{ formatDate(scope.row.createTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="220">
-          <template #default="scope">
-            <el-button 
-              v-if="scope.row.status === 0"
-              type="success" 
-              size="small" 
-              @click="handleApprove(scope.row)"
+          </div>
+
+          <div class="text-xs text-gray-500 mb-2 line-clamp-2">{{ link.siteDescript }}</div>
+
+          <div class="text-xs text-blue-600 mb-2 truncate">
+            <a :href="link.siteUrl" target="_blank">{{ link.siteUrl }}</a>
+          </div>
+
+          <div class="text-xs text-gray-400 mb-2">
+            申请时间: {{ formatDate(link.createTime) }}
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+            <el-button
+              v-if="link.status === 0"
+              type="success"
+              size="mini"
+              @click="handleApprove(link)"
             >
-              <el-icon><Check /></el-icon>
               通过
             </el-button>
-            <el-button 
-              v-if="scope.row.status === 1"
-              type="warning" 
-              size="small" 
-              @click="handleDisable(scope.row)"
+            <el-button
+              v-if="link.status === 1"
+              type="warning"
+              size="mini"
+              @click="handleDisable(link)"
             >
-              <el-icon><Lock /></el-icon>
               停用
             </el-button>
-            <el-button 
-              v-if="scope.row.status === 2"
-              type="primary" 
-              size="small" 
-              @click="handleEnable(scope.row)"
+            <el-button
+              v-if="link.status === 2"
+              type="primary"
+              size="mini"
+              @click="handleEnable(link)"
             >
-              <el-icon><Unlock /></el-icon>
               启用
             </el-button>
-            <el-button 
-              type="danger" 
-              size="small" 
-              @click="handleReject(scope.row)"
+            <el-button
+              type="danger"
+              size="mini"
+              @click="handleReject(link)"
             >
-              <el-icon><Delete /></el-icon>
               删除
             </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+        </div>
+      </div>
 
       <!-- 空状态 -->
       <div v-if="filteredLinks.length === 0" class="empty-state">
@@ -489,5 +555,71 @@ onMounted(() => {
 
 .empty-state {
   padding: 40px;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .admin-links {
+    padding: 12px;
+  }
+
+  .stats-cards {
+    gap: 12px;
+  }
+
+  .stat-card {
+    min-width: calc(50% - 6px);
+    padding: 12px;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    margin-right: 10px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .table-container {
+    padding: 12px;
+  }
+
+  .lg\\:hidden .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-cards {
+    flex-direction: column;
+  }
+
+  .stat-card {
+    min-width: 100%;
+  }
+
+  .lg\\:hidden .flex.flex-wrap.gap-2 {
+    gap: 6px;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
 }
 </style>

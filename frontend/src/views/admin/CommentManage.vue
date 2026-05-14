@@ -87,7 +87,8 @@
         </div>
       </div>
 
-      <div v-if="comments.length > 0" class="overflow-x-auto">
+      <!-- 桌面端表格视图 -->
+      <div v-if="comments.length > 0" class="overflow-x-auto hidden lg:block">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
@@ -134,6 +135,42 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 移动端卡片视图 -->
+      <div v-if="comments.length > 0" class="lg:hidden space-y-3">
+        <div
+          v-for="comment in comments"
+          :key="comment.id"
+          class="bg-white rounded-lg shadow p-3 border border-gray-200"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                <span class="text-white text-xs font-medium">{{ getAvatarInitial(comment.nickname) }}</span>
+              </div>
+              <div>
+                <div class="font-medium text-gray-900 text-sm">{{ comment.nickname }}</div>
+                <div class="text-xs text-gray-500">{{ comment.email || '-' }}</div>
+              </div>
+            </div>
+            <span :class="['px-2 py-0.5 text-xs rounded-full', comment.isAnonymous ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800']">
+              {{ comment.isAnonymous ? '匿名' : '实名' }}
+            </span>
+          </div>
+
+          <div class="text-sm text-gray-700 mb-2 line-clamp-3">{{ comment.content }}</div>
+
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+            <span>{{ formatDate(comment.createTime) }}</span>
+          </div>
+
+          <div class="flex gap-2 pt-2 border-t border-gray-100">
+            <el-button type="danger" size="mini" @click="handleDeleteComment(comment)">
+              删除
+            </el-button>
+          </div>
+        </div>
       </div>
 
       <div v-else class="p-12 text-center">
@@ -361,12 +398,44 @@ onMounted(() => {
   if (articleId) {
     currentArticleId.value = parseInt(articleId, 10)
   }
-  
+
   fetchComments()
-  
+
   // 只有在留言板模式下才加载背景设置
   if (!isArticleCommentsMode.value) {
     loadMessagesBackground()
   }
 })
 </script>
+
+<style scoped>
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .w-64 {
+    width: 100%;
+  }
+
+  .lg\\:hidden .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lg\\:hidden .flex.gap-2 {
+    gap: 6px;
+  }
+
+  .lg\\:hidden .el-button--mini {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+}
+</style>

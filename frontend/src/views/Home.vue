@@ -79,6 +79,8 @@
 
       </div>
     </div>
+    <!-- 音乐播放器 -->
+    <MusicPlayer />
   </MainLayout>
 </template>
 
@@ -87,6 +89,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Calendar, ChatLineSquare, View } from '@element-plus/icons-vue'
 import MainLayout from '@/components/MainLayout.vue'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 import { usePostStore } from '@/stores/post'
 import { getSiteConfig } from '@/api/config'
 import request from '@/utils/request'
@@ -241,7 +244,7 @@ onMounted(() => {
   min-height: 100vh;
   background-color: transparent;
   padding-top: 100px;
-  padding-bottom: 60px;
+  padding-bottom: 100px; /* 为右下角音乐播放器留出空间 */
 }
 
 .hero-section {
@@ -339,12 +342,9 @@ onMounted(() => {
 @media (max-width: 768px) {
   .home-container {
     padding-top: 80px;
-    padding-bottom: 40px;
-    background-image: url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20night%20sky%20with%20stars%20and%20galaxy%2C%20dark%20purple%20blue%20gradient%2C%20dreamy%20atmosphere%2C%20minimalist%20background&image_size=landscape_16_9');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    padding-bottom: 80px; /* 为移动端音乐播放器留出空间 */
+    /* 移除移动端独立背景，使用 App.vue 的全局背景 */
+    background: transparent;
   }
   
   .hero-section {
